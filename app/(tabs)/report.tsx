@@ -20,11 +20,11 @@ const Report = () => {
       </Text>
       <View
         className="w-[80%] h-12 rounded-xl shadow-lg shadow-black/10 flex items-center justify-center mb-8"
-        style={{ backgroundColor: "#8bf889ff" }}
+        style={{ backgroundColor: "rgb(156, 163, 175)" }}
       >
         <Text
           className="text-lg text-white text-shadow-md font-bold"
-          style={{ color: "#003406" }}
+          style={{ color: "white" }}
         >
           Report
         </Text>
