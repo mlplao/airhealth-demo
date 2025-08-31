@@ -10,5 +10,6 @@ module.exports = {
   theme: {
     extend: {},
   },
+  assets: ["./app/assets/fonts"],
   plugins: [],
 };
