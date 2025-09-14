@@ -1,3 +1,5 @@
+import { Ionicons } from "@expo/vector-icons";
+import { Link } from "expo-router";
 import { Platform, ScrollView, StatusBar, Text, View } from "react-native";
 import CircularProgress from "../components/circleProgress";
 import "../global.css";
@@ -13,7 +15,7 @@ export default function Index() {
       contentContainerStyle={{
         alignItems: "center",
         paddingTop,
-        paddingBottom: 100,
+        paddingBottom: 150,
       }}
       showsVerticalScrollIndicator={false}
     >
@@ -32,10 +34,35 @@ export default function Index() {
           elevation: 6,
         }}
       >
-        <CircularProgress percentage={42} size={180} strokeWidth={25} />
+        <CircularProgress percentage={32} size={180} strokeWidth={25} />
       </View>
 
-      <Text className="mb-8 font-bold text-2xl">Good</Text>
+      <View className="mb-8 flex flex-row items-center justify-between w-[100px]">
+        <Text className="font-bold text-2xl">Good</Text>
+
+        <Ionicons
+          className="shadow-md"
+          name="help-circle-outline"
+          size={28}
+          color="#8f8f8fff"
+        />
+      </View>
+
+      {/* Map Display */}
+      <View
+        className="w-[80%] mb-8 p-4 rounded-[10px] flex items-center justify-center bg-white"
+        style={{
+          shadowColor: "#000",
+          shadowOffset: { width: 0, height: 0 },
+          shadowOpacity: 0.15,
+          shadowRadius: 6,
+          elevation: 6,
+        }}
+      >
+        <Link href={"/airmap"} className="font-bold text-lg">
+          View Map
+        </Link>
+      </View>
 
       {[
         { label: "PM2.5", value: "2.09 au" },
