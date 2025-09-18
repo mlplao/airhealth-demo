@@ -24,11 +24,10 @@ const interpolateColor = (color1: any, color2: any, factor: any) => {
 // Multi-stop interpolation
 const getInterpolatedColor = (percentage: any) => {
   const stops = [
-    { pct: 0, color: "#9ca3af" }, // gray
-    { pct: 40, color: "#22c55e" }, // green
+    { pct: 0, color: "#ef4444" },
+    { pct: 40, color: "#f97316" }, // orange
     { pct: 50, color: "#eab308" }, // yellow
-    { pct: 75, color: "#f97316" }, // orange
-    { pct: 100, color: "#ef4444" }, // red
+    { pct: 100, color: "#22c55e" }, // green
   ];
 
   for (let i = 0; i < stops.length - 1; i++) {
