@@ -9,7 +9,7 @@ const CustomTabBar = (props: any) => {
 
   React.useEffect(() => {
     // Animate all tabs
-    animatedValues.forEach((animValue, index) => {
+    animatedValues.forEach((animValue: any, index: any) => {
       const isFocused = props.state.index === index;
       Animated.timing(animValue, {
         toValue: isFocused ? 1 : 0,
