@@ -22,12 +22,15 @@ const interpolateColor = (color1: any, color2: any, factor: any) => {
 };
 
 // Multi-stop interpolation
-const getInterpolatedColor = (percentage: any) => {
+const getInterpolatedColor = (percentage: number) => {
   const stops = [
-    { pct: 0, color: "#ef4444" },
-    { pct: 40, color: "#f97316" }, // orange
-    { pct: 50, color: "#eab308" }, // yellow
-    { pct: 100, color: "#22c55e" }, // green
+    { pct: 0, color: "#8E24AA" }, // Purple - Hazardous
+    { pct: 5, color: "#F44336" }, // Red - Very Unhealthy
+    { pct: 20, color: "#FF9800" }, // Orange - Unhealthy
+    { pct: 40, color: "#FFC107" }, // Yellow - Moderate
+    { pct: 60, color: "#8BC34A" }, // Light Green - Good to Moderate
+    { pct: 85, color: "#4CAF50" }, // Green - Good
+    { pct: 100, color: "#4CAF50" }, // Cap at Green
   ];
 
   for (let i = 0; i < stops.length - 1; i++) {
