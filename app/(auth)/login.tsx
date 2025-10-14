@@ -1,7 +1,9 @@
-// login.tsx
-import { useRouter } from "expo-router";
-import React, { useState } from "react";
+import { Link, useRouter } from "expo-router";
+import { signInWithEmailAndPassword } from "firebase/auth";
+import React, { useEffect, useState } from "react";
 import {
+    ActivityIndicator,
+    Alert,
     KeyboardAvoidingView,
     Platform,
     ScrollView,
@@ -10,24 +12,52 @@ import {
     TouchableOpacity,
     View,
 } from "react-native";
+import { auth } from "../../firebaseconfig";
+import { useAuth } from "../context/authContext";
 
 const Login = () => {
+    const router = useRouter();
+    const { user, loading } = useAuth(); // ✅ Correctly destructure from context
+
+    // ✅ Handle redirect after successful login
+    useEffect(() => {
+        if (!loading && user) {
+            router.replace("/(tabs)/home");
+        }
+    }, [user, loading]);
+
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
-    const router = useRouter();
+    const [signingIn, setSigningIn] = useState(false);
 
-    const handleLogin = () => {
-        // For now, just call success callback
-        // Later add Firebase authentication:
-        // try {
-        //   await signInWithEmailAndPassword(auth, email, password);
-        //   onLoginSuccess();
-        // } catch (error) {
-        //   Alert.alert('Error', error.message);
-        // }
+    const handleLogin = async () => {
+        if (!email || !password) {
+            Alert.alert(
+                "Missing Fields",
+                "Please enter both email and password."
+            );
+            return;
+        }
 
-        console.log("Login successful");
+        try {
+            setSigningIn(true);
+            await signInWithEmailAndPassword(auth, email.trim(), password);
+            // AuthContext will automatically detect the user state
+        } catch (error: any) {
+            console.error(error);
+            Alert.alert("Login Failed", error.message);
+        } finally {
+            setSigningIn(false);
+        }
     };
+
+    if (loading) {
+        return (
+            <View className="flex-1 justify-center items-center bg-white">
+                <ActivityIndicator size="large" color="#22c55e" />
+            </View>
+        );
+    }
 
     return (
         <KeyboardAvoidingView
@@ -55,6 +85,8 @@ const Login = () => {
                                 placeholder="Enter your email"
                                 value={email}
                                 onChangeText={setEmail}
+                                keyboardType="email-address"
+                                autoCapitalize="none"
                             />
                         </View>
 
@@ -72,25 +104,31 @@ const Login = () => {
                         </View>
 
                         <TouchableOpacity
-                            className="bg-green-600 rounded-xl py-4 mt-6"
-                            onPress={() => router.push("/(tabs)/home")}
+                            className={`rounded-xl py-4 mt-6 ${
+                                signingIn ? "bg-gray-400" : "bg-green-600"
+                            }`}
+                            onPress={handleLogin}
+                            disabled={signingIn}
                         >
-                            <Text className="text-white text-center font-bold text-base">
-                                Sign In
-                            </Text>
+                            {signingIn ? (
+                                <ActivityIndicator color="#fff" />
+                            ) : (
+                                <Text className="text-white text-center font-bold text-base">
+                                    Sign In
+                                </Text>
+                            )}
                         </TouchableOpacity>
 
                         <View className="flex-row justify-center items-center mt-6">
                             <Text className="text-gray-600">
                                 Don't have an account?
                             </Text>
-                            <TouchableOpacity
-                                onPress={() => router.push("/(auth)/register")}
+                            <Link
+                                href="/(auth)/register"
+                                className="text-green-600 font-bold ml-2"
                             >
-                                <Text className="text-green-600 font-bold ml-2">
-                                    Sign Up
-                                </Text>
-                            </TouchableOpacity>
+                                Sign Up
+                            </Link>
                         </View>
                     </View>
                 </View>

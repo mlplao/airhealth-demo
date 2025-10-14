@@ -1,6 +1,7 @@
 import { router } from "expo-router";
 import React from "react";
 import {
+    Alert,
     Platform,
     ScrollView,
     StatusBar,
@@ -8,12 +9,25 @@ import {
     TouchableOpacity,
     View,
 } from "react-native";
+import { useAuth } from "../context/authContext";
 import "../global.css";
 import Header from "../header";
 
 export default function Index() {
+    const { logout } = useAuth();
+
     const paddingTop =
         Platform.OS === "ios" ? 44 : StatusBar.currentHeight || 0;
+
+    const handleSignOut = async () => {
+        try {
+            await logout();
+            router.replace("/(auth)/login");
+            Alert.alert("Signed Out", "You have been signed out.");
+        } catch (error: any) {
+            Alert.alert("Error", error.message);
+        }
+    };
 
     return (
         <ScrollView
@@ -49,11 +63,10 @@ export default function Index() {
             </View>
 
             <View className="w-[80%] bg-gray-100 rounded-lg p-4 shadow">
-                <TouchableOpacity
-                    className="py-3"
-                    onPress={() => router.push("/(auth)/login")}
-                >
-                    <Text className="text-base">Sign out</Text>
+                <TouchableOpacity className="py-3" onPress={handleSignOut}>
+                    <Text className="text-base text-red-600 font-semibold">
+                        Sign out
+                    </Text>
                 </TouchableOpacity>
             </View>
         </ScrollView>
