@@ -1,4 +1,5 @@
 // login.tsx
+import { useRouter } from "expo-router";
 import React, { useState } from "react";
 import {
     KeyboardAvoidingView,
@@ -10,13 +11,10 @@ import {
     View,
 } from "react-native";
 
-interface LoginProps {
-    onLoginSuccess: () => void;
-}
-
-const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
+const Login = () => {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
+    const router = useRouter();
 
     const handleLogin = () => {
         // For now, just call success callback
@@ -28,7 +26,7 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
         //   Alert.alert('Error', error.message);
         // }
 
-        onLoginSuccess();
+        console.log("Login successful");
     };
 
     return (
@@ -57,8 +55,6 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
                                 placeholder="Enter your email"
                                 value={email}
                                 onChangeText={setEmail}
-                                autoCapitalize="none"
-                                keyboardType="email-address"
                             />
                         </View>
 
@@ -77,7 +73,7 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
 
                         <TouchableOpacity
                             className="bg-green-600 rounded-xl py-4 mt-6"
-                            onPress={handleLogin}
+                            onPress={() => router.push("/(tabs)/home")}
                         >
                             <Text className="text-white text-center font-bold text-base">
                                 Sign In
@@ -88,7 +84,9 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
                             <Text className="text-gray-600">
                                 Don't have an account?
                             </Text>
-                            <TouchableOpacity>
+                            <TouchableOpacity
+                                onPress={() => router.push("/(auth)/register")}
+                            >
                                 <Text className="text-green-600 font-bold ml-2">
                                     Sign Up
                                 </Text>

@@ -7,7 +7,6 @@ const Header = () => {
             <TouchableOpacity
                 onPress={() => console.log("Menu pressed!")}
             ></TouchableOpacity>
-
             <View className="w-7" />
         </View>
     );
