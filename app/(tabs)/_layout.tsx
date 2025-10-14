@@ -1,18 +1,8 @@
 import { Tabs } from "expo-router";
-import React, { createContext, useContext, useState } from "react";
+import React, { useState } from "react";
 import { Animated, Pressable, View } from "react-native";
 
-// Create context to control tab bar visibility
-const TabBarVisibilityContext = createContext({
-    isVisible: true,
-    setIsVisible: (visible: boolean) => {},
-});
-
-export const useTabBarVisibility = () => useContext(TabBarVisibilityContext);
-
 const CustomTabBar = (props: any) => {
-    const { isVisible } = useTabBarVisibility();
-
     const animatedValues = React.useRef(
         props.state.routes.map(() => new Animated.Value(0))
     ).current;
@@ -28,11 +18,6 @@ const CustomTabBar = (props: any) => {
             }).start();
         });
     }, [props.state.index]);
-
-    // Hide tab bar if not visible
-    if (!isVisible) {
-        return null;
-    }
 
     return (
         <View
@@ -51,7 +36,7 @@ const CustomTabBar = (props: any) => {
 
                 let label;
                 switch (route.name) {
-                    case "index":
+                    case "home":
                         label = "Home";
                         break;
                     case "search":
@@ -128,19 +113,17 @@ const _Layout = () => {
     const [isVisible, setIsVisible] = useState(true);
 
     return (
-        <TabBarVisibilityContext.Provider value={{ isVisible, setIsVisible }}>
-            <Tabs
-                tabBar={(props) => <CustomTabBar {...props} />}
-                screenOptions={{
-                    headerShown: false,
-                }}
-            >
-                <Tabs.Screen name="index" options={{ title: "Home" }} />
-                <Tabs.Screen name="search" options={{ title: "Search" }} />
-                <Tabs.Screen name="report" options={{ title: "Report" }} />
-                <Tabs.Screen name="settings" options={{ title: "Settings" }} />
-            </Tabs>
-        </TabBarVisibilityContext.Provider>
+        <Tabs
+            tabBar={(props) => <CustomTabBar {...props} />}
+            screenOptions={{
+                headerShown: false,
+            }}
+        >
+            <Tabs.Screen name="home" options={{ title: "Home" }} />
+            <Tabs.Screen name="search" options={{ title: "Search" }} />
+            <Tabs.Screen name="report" options={{ title: "Report" }} />
+            <Tabs.Screen name="settings" options={{ title: "Settings" }} />
+        </Tabs>
     );
 };
 

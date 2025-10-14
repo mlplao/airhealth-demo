@@ -7,19 +7,8 @@ import airQualityService, {
 import CircularProgress from "../components/circleProgress";
 import "../global.css";
 import Header from "../header";
-import Login from "../login";
-import { useTabBarVisibility } from "./_layout";
 
 export default function Index() {
-    // For now, just a boolean. Later replace with Firebase auth check
-    const [isLoggedIn, setIsLoggedIn] = useState(false);
-    const { setIsVisible } = useTabBarVisibility();
-
-    // Hide tab bar when on login screen
-    useEffect(() => {
-        setIsVisible(isLoggedIn);
-    }, [isLoggedIn]);
-
     const paddingTop =
         Platform.OS === "ios" ? 44 : StatusBar.currentHeight || 0;
 
@@ -38,9 +27,6 @@ export default function Index() {
     } | null>(null);
 
     useEffect(() => {
-        // Only fetch data if logged in
-        if (!isLoggedIn) return;
-
         (async () => {
             try {
                 const loc = await airQualityService.getCurrentLocation();
@@ -61,12 +47,7 @@ export default function Index() {
                 console.error(error);
             }
         })();
-    }, [isLoggedIn]);
-
-    // Show login if not logged in
-    if (!isLoggedIn) {
-        return <Login onLoginSuccess={() => setIsLoggedIn(true)} />;
-    }
+    }, []);
 
     return (
         <ScrollView
