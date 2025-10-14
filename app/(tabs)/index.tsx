@@ -1,4 +1,3 @@
-import { Ionicons } from "@expo/vector-icons";
 import { Link } from "expo-router";
 import React, { useEffect, useState } from "react";
 import { Platform, ScrollView, StatusBar, Text, View } from "react-native";
@@ -109,13 +108,6 @@ export default function Index() {
                 <Text className="font-bold text-2xl">
                     {airQuality?.status || "Unknown"}
                 </Text>
-
-                <Ionicons
-                    className="shadow-md"
-                    name="help-circle-outline"
-                    size={28}
-                    color="#8f8f8fff"
-                />
             </View>
 
             {/* Map Display */}
