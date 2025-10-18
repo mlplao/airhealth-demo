@@ -34,9 +34,7 @@ const Search = () => {
                     placeholder="Search for places..."
                     placeholderTextColor="#9ca3af"
                     className="flex-1 text-base"
-                    style={{
-                        outlineStyle: "none", // Removes blue outline on web
-                    }}
+                    onChangeText={(text) => console.log(text)}
                 />
             </View>
         </ScrollView>
