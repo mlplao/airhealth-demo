@@ -1,5 +1,6 @@
 import { useRouter } from "expo-router";
 import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
+import { doc, serverTimestamp, setDoc } from "firebase/firestore"; // import Firestore methods
 import React, { useState } from "react";
 import {
     ActivityIndicator,
@@ -12,7 +13,7 @@ import {
     TouchableOpacity,
     View,
 } from "react-native";
-import { auth } from "../../firebaseconfig";
+import { auth, db } from "../../firebaseconfig"; // import db
 
 const Register = () => {
     const [email, setEmail] = useState("");
@@ -36,18 +37,28 @@ const Register = () => {
         try {
             setLoading(true);
 
+            // Create account in Firebase Auth
             const userCredential = await createUserWithEmailAndPassword(
                 auth,
                 email.trim(),
                 password
             );
 
-            // ✅ Set display name after registration
-            await updateProfile(userCredential.user, {
-                displayName: name,
+            const user = userCredential.user;
+
+            // Set display name in Auth
+            await updateProfile(user, { displayName: name });
+
+            // Store user data in Firestore
+            await setDoc(doc(db, "users", user.uid), {
+                name,
+                email,
+                createdAt: serverTimestamp(),
+                userId: user.uid,
+                role: "user", // optional, if you’ll have admin vs normal users
             });
 
-            Alert.alert("Success", "Enjoy Air-Health!");
+            Alert.alert("Success", "Account created successfully!");
             router.push("/(tabs)/home");
         } catch (error: any) {
             let message = "Something went wrong.";
@@ -60,7 +71,7 @@ const Register = () => {
 
             Alert.alert("Registration Failed", message);
         } finally {
-            setLoading(false); // ✅ Always reset loading
+            setLoading(false);
         }
     };
 
