@@ -40,31 +40,36 @@ function simplifyStatus(category: string): string {
     return category.split(" ")[0];
 }
 
-function getAirQualityPercentage(aqi: number): number {
-    let percent: number;
+function getAirQualityPercentage(aqi: number, category: string): number {
+    // Convert AQI (0–500) into a 0–100 scale (inversely)
+    // 0 AQI = 100%, 500 AQI = 0%
+    let raw = Math.max(0, Math.min(100, 100 - (aqi / 500) * 100));
 
-    if (aqi <= 50) {
-        // Bright green zone — excellent
-        percent = 90 + (50 - aqi) * 0.2; // ~90–100%
-    } else if (aqi <= 100) {
-        // Yellow zone — moderate
-        percent = 70 + (100 - aqi) * 0.2; // ~70–90%
-    } else if (aqi <= 150) {
-        // Orange zone — unhealthy for sensitive groups
-        percent = 50 + (150 - aqi) * 0.2; // ~50–70%
-    } else if (aqi <= 200) {
-        // Red zone — unhealthy
-        percent = 30 + (200 - aqi) * 0.2; // ~30–50%
-    } else if (aqi <= 300) {
-        // Purple zone — very unhealthy
-        percent = 10 + (300 - aqi) * 0.2; // ~10–30%
-    } else {
-        // Maroon zone — hazardous
-        percent = Math.max(0, 10 - (aqi - 300) * 0.05); // Gradually approaches 0%
+    // Adjust by category for smoother feel
+    const simplified = simplifyStatus(category);
+    switch (simplified) {
+        case "Good":
+            // Small penalty for AQI > 30
+            raw = Math.max(90, raw);
+            break;
+        case "Moderate":
+            raw = Math.min(89, Math.max(70, raw));
+            break;
+        case "Unhealthy for Sensitive":
+            raw = Math.min(69, Math.max(50, raw));
+            break;
+        case "Unhealthy":
+            raw = Math.min(49, Math.max(30, raw));
+            break;
+        case "Very Unhealthy":
+            raw = Math.min(29, Math.max(10, raw));
+            break;
+        case "Hazardous":
+            raw = Math.min(9, Math.max(0, raw));
+            break;
     }
 
-    // Return an integer percentage clamped between 0 and 100
-    return Math.max(0, Math.min(100, Math.round(percent)));
+    return Math.round(raw);
 }
 
 const airQualityService = {
@@ -120,7 +125,7 @@ const airQualityService = {
             const status = simplifyStatus(rawCategory);
 
             // Calculate percentage using improved algorithm
-            const percentage = getAirQualityPercentage(aqi);
+            const percentage = getAirQualityPercentage(aqi, rawCategory);
 
             return { percentage, status, aqi };
         } catch (error) {

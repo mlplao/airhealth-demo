@@ -1,17 +1,30 @@
 import { Link } from "expo-router";
 import React, { useEffect, useState } from "react";
-import { Platform, ScrollView, StatusBar, Text, View } from "react-native";
+import {
+    Platform,
+    ScrollView,
+    StatusBar,
+    Text,
+    TouchableOpacity,
+    View,
+} from "react-native";
 import airQualityService, {
     LocationData,
 } from "../components/airQualityService";
 import CircularProgress from "../components/circleProgress";
 import "../global.css";
 import Header from "../header";
+// Vector Icons
+import { AntDesign } from "@expo/vector-icons";
+import HealthRecommendationModal from "../components/healthRecommendationModal";
+// Modal
 
 export default function Index() {
     const paddingTop =
         Platform.OS === "ios" ? 44 : StatusBar.currentHeight || 0;
+    const [modalVisible, setModalVisible] = useState(false);
 
+    // Health recommendation based on air quality status
     const [location, setLocation] = useState<LocationData | null>(null);
     const [airQuality, setAirQuality] = useState<{
         percentage: number;
@@ -25,6 +38,10 @@ export default function Index() {
         no2: number;
         so2: number;
     } | null>(null);
+    const recommendation = airQualityService.getHealthRecommendation(
+        airQuality?.status || "Unknown",
+        airQuality?.percentage || 0
+    );
 
     useEffect(() => {
         (async () => {
@@ -85,11 +102,20 @@ export default function Index() {
             </View>
 
             {/* Status */}
-            <View className="mb-8 flex flex-row items-center justify-between gap-4">
-                <Text className="font-bold text-2xl">
+            <TouchableOpacity
+                className="mb-8 flex flex-row items-center justify-between gap-4"
+                onPress={() => setModalVisible(true)}
+            >
+                <Text className="font-bold text-2xl text-black">
                     {airQuality?.status || "Unknown"}
                 </Text>
-            </View>
+                <AntDesign name="question-circle" size={20} color="#000000ff" />
+            </TouchableOpacity>
+            <HealthRecommendationModal
+                visible={modalVisible}
+                onClose={() => setModalVisible(false)}
+                recommendation={recommendation}
+            />
 
             {/* Map Display */}
             <View
@@ -117,7 +143,7 @@ export default function Index() {
                     { label: "NO₂", value: `${pollutants.no2} µg/m³` },
                     { label: "SO₂", value: `${pollutants.so2} µg/m³` },
                 ].map((item, index) => (
-                    <View
+                    <TouchableOpacity
                         key={index}
                         className="w-[80%] h-[70px] bg-white rounded-[20px] mb-8 items-center justify-center flex flex-row p-6"
                         style={{
@@ -134,7 +160,7 @@ export default function Index() {
                         <Text className="w-[40%] font-bold text-lg">
                             {item.value}
                         </Text>
-                    </View>
+                    </TouchableOpacity>
                 ))
             ) : (
                 <Text>Loading pollutants...</Text>
