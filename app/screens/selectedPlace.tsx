@@ -1,4 +1,5 @@
-import { Link } from "expo-router";
+import { AntDesign } from "@expo/vector-icons";
+import { useLocalSearchParams } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
     Platform,
@@ -8,24 +9,24 @@ import {
     TouchableOpacity,
     View,
 } from "react-native";
-import airQualityService, {
-    LocationData,
-} from "../components/airQualityService";
+import airQualityService from "../components/airQualityService";
 import CircularProgress from "../components/circleProgress";
+import HealthRecommendationModal from "../components/healthRecommendationModal";
 import "../global.css";
 import Header from "../header";
-// Vector Icons
-import { AntDesign } from "@expo/vector-icons";
-import HealthRecommendationModal from "../components/healthRecommendationModal";
-// Modal
 
-export default function Index() {
+export default function SelectedPlace() {
     const paddingTop =
         Platform.OS === "ios" ? 44 : StatusBar.currentHeight || 0;
     const [modalVisible, setModalVisible] = useState(false);
 
-    // Health recommendation based on air quality status
-    const [location, setLocation] = useState<LocationData | null>(null);
+    // Read parameters passed to this screen
+    const { lat, lng, location_name } = useLocalSearchParams<{
+        lat: string;
+        lng: string;
+        location_name: string;
+    }>();
+
     const [airQuality, setAirQuality] = useState<{
         percentage: number;
         status: string;
@@ -38,33 +39,33 @@ export default function Index() {
         no2: number;
         so2: number;
     } | null>(null);
+
     const recommendation = airQualityService.getHealthRecommendation(
         airQuality?.status || "Unknown",
         airQuality?.percentage || 0
     );
 
     useEffect(() => {
+        if (!lat || !lng) return;
+
         (async () => {
             try {
-                const loc = await airQualityService.getCurrentLocation();
-                setLocation(loc);
-
                 const aqi = await airQualityService.getAirQuality(
-                    loc.latitude,
-                    loc.longitude
+                    Number(lat),
+                    Number(lng)
                 );
                 setAirQuality(aqi);
 
                 const pol = await airQualityService.getPollutants(
-                    loc.latitude,
-                    loc.longitude
+                    Number(lat),
+                    Number(lng)
                 );
                 setPollutants(pol);
             } catch (error) {
-                console.error(error);
+                console.error("Error fetching air quality data:", error);
             }
         })();
-    }, []);
+    }, [lat, lng]);
 
     return (
         <ScrollView
@@ -78,9 +79,9 @@ export default function Index() {
         >
             <Header />
 
-            {/* City */}
+            {/* City Name */}
             <Text className="text-4xl font-bold text-black shadow-lg shadow-black/15 mb-4">
-                {location ? location.city : "Loading location..."}
+                {location_name || "Unknown Location"}
             </Text>
 
             {/* AQI Circle */}
@@ -111,27 +112,12 @@ export default function Index() {
                 </Text>
                 <AntDesign name="question-circle" size={20} color="#000000ff" />
             </TouchableOpacity>
+
             <HealthRecommendationModal
                 visible={modalVisible}
                 onClose={() => setModalVisible(false)}
                 recommendation={recommendation}
             />
-
-            {/* Map Display */}
-            <View
-                className="w-[80%] mb-8 p-4 rounded-[10px] flex items-center justify-center bg-white"
-                style={{
-                    shadowColor: "#000",
-                    shadowOffset: { width: 0, height: 0 },
-                    shadowOpacity: 0.15,
-                    shadowRadius: 6,
-                    elevation: 6,
-                }}
-            >
-                <Link href={"/screens/airmap"} className="font-bold text-lg">
-                    View Map
-                </Link>
-            </View>
 
             {/* Pollutants */}
             {pollutants ? (
