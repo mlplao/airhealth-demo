@@ -142,7 +142,7 @@ export default function Search() {
             setResults([]);
             setQuery("");
             router.push({
-                pathname: "/screens/selectedPlace",
+                pathname: "/selectedPlace",
                 params: { lat, lng, location_name: name },
             });
         } catch (error) {
@@ -235,12 +235,6 @@ export default function Search() {
                         </TouchableOpacity>
                     ))}
                 </View>
-            )}
-
-            {query.length === 0 && recentSearches.length === 0 && (
-                <Text className="text-gray-500 mt-4 w-[80%] text-center">
-                    Recently searched locations will appear here.
-                </Text>
             )}
         </ScrollView>
     );
