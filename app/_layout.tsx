@@ -29,6 +29,14 @@ export default function RootLayout() {
                         headerBackTitle: "Back",
                     }}
                 />
+                <Stack.Screen
+                    name="selectedPlace"
+                    options={{
+                        headerShown: true,
+                        title: "Search",
+                        headerBackTitle: "Back",
+                    }}
+                />
             </Stack>
         </AuthProvider>
     );
