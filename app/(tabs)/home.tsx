@@ -128,7 +128,7 @@ export default function Index() {
                     elevation: 6,
                 }}
             >
-                <Link href={"/screens/airmap"} className="font-bold text-lg">
+                <Link href={"/airmap"} className="font-bold text-lg">
                     View Map
                 </Link>
             </View>

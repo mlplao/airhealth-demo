@@ -1,23 +1,14 @@
 import { AntDesign } from "@expo/vector-icons";
 import { useLocalSearchParams } from "expo-router";
 import React, { useEffect, useState } from "react";
-import {
-    Platform,
-    ScrollView,
-    StatusBar,
-    Text,
-    TouchableOpacity,
-    View,
-} from "react-native";
-import airQualityService from "../components/airQualityService";
-import CircularProgress from "../components/circleProgress";
-import HealthRecommendationModal from "../components/healthRecommendationModal";
-import "../global.css";
-import Header from "../header";
+import { ScrollView, Text, TouchableOpacity, View } from "react-native";
+import airQualityService from "./components/airQualityService";
+import CircularProgress from "./components/circleProgress";
+import HealthRecommendationModal from "./components/healthRecommendationModal";
+import "./global.css";
+import Header from "./header";
 
 export default function SelectedPlace() {
-    const paddingTop =
-        Platform.OS === "ios" ? 44 : StatusBar.currentHeight || 0;
     const [modalVisible, setModalVisible] = useState(false);
 
     // Read parameters passed to this screen
@@ -72,7 +63,6 @@ export default function SelectedPlace() {
             className="flex-1"
             contentContainerStyle={{
                 alignItems: "center",
-                paddingTop,
                 paddingBottom: 150,
             }}
             showsVerticalScrollIndicator={false}
