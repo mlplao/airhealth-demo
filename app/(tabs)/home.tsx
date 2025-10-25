@@ -1,4 +1,4 @@
-import { Link } from "expo-router";
+import { router } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
     Platform,
@@ -118,7 +118,10 @@ export default function Index() {
             />
 
             {/* Map Display */}
-            <View
+            <TouchableOpacity
+                onPress={() => {
+                    router.push("/airmap");
+                }}
                 className="w-[80%] mb-8 p-4 rounded-[10px] flex items-center justify-center bg-white"
                 style={{
                     shadowColor: "#000",
@@ -128,10 +131,8 @@ export default function Index() {
                     elevation: 6,
                 }}
             >
-                <Link href={"/airmap"} className="font-bold text-lg">
-                    View Map
-                </Link>
-            </View>
+                <Text className="font-bold text-lg">Air-Health Map</Text>
+            </TouchableOpacity>
 
             {/* Pollutants */}
             {pollutants ? (
