@@ -1,3 +1,4 @@
+import { EvilIcons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import { doc, getDoc, updateDoc } from "firebase/firestore";
 import React, { useEffect, useState } from "react";
@@ -174,10 +175,12 @@ export default function Search() {
                 <TextInput
                     className="flex-1 text-base"
                     placeholder="Search for a city..."
+                    placeholderTextColor={"gray"}
                     value={query}
                     onChangeText={searchPlaces}
                     autoCorrect={false}
                 />
+                <EvilIcons name="search" size={24} color="black" />
             </View>
 
             {/* Search Results */}
