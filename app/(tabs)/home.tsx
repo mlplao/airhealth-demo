@@ -1,3 +1,4 @@
+import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
@@ -118,21 +119,42 @@ export default function Index() {
             />
 
             {/* Map Display */}
-            <TouchableOpacity
-                onPress={() => {
-                    router.push("/airmap");
-                }}
-                className="w-[80%] mb-8 p-4 rounded-[10px] flex items-center justify-center bg-white"
-                style={{
-                    shadowColor: "#000",
-                    shadowOffset: { width: 0, height: 0 },
-                    shadowOpacity: 0.15,
-                    shadowRadius: 6,
-                    elevation: 6,
-                }}
-            >
-                <Text className="font-bold text-lg">Air-Health Map</Text>
-            </TouchableOpacity>
+            <View className="w-[80%] mb-8 rounded-[12px] p-[2px]">
+                {/* Rainbow border layer */}
+                <LinearGradient
+                    colors={[
+                        "#FF6B6B", // red
+                        "#FFD93D", // yellow
+                        "#6BCB77", // green
+                        "#4D96FF", // blue
+                        "#A66BFF", // purple
+                    ]}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 1 }}
+                    style={{
+                        borderRadius: 12,
+                        padding: 2, // thickness of rainbow border
+                    }}
+                >
+                    {/* Inner white button */}
+                    <TouchableOpacity
+                        onPress={() => router.push("/airmap")}
+                        activeOpacity={0.8}
+                        className="flex items-center justify-center bg-white rounded-[10px] p-4"
+                        style={{
+                            shadowColor: "#000",
+                            shadowOffset: { width: 0, height: 0 },
+                            shadowOpacity: 0.15,
+                            shadowRadius: 6,
+                            elevation: 6,
+                        }}
+                    >
+                        <Text className="font-bold text-lg text-gray-800">
+                            Air-Health Map
+                        </Text>
+                    </TouchableOpacity>
+                </LinearGradient>
+            </View>
 
             {/* Pollutants */}
             {pollutants ? (
