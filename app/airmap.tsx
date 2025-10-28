@@ -100,7 +100,7 @@ const Airmap = () => {
             {/* Bottom heatmap legend */}
             <View style={styles.legendContainer}>
                 <View style={styles.legendHeader}>
-                    <Text style={styles.legendTitle}>Heatmap</Text>
+                    <Text style={styles.legendTitle}>Pollution Heatmap</Text>
                     <Switch
                         value={heatmapVisible}
                         onValueChange={setHeatmapVisible}
