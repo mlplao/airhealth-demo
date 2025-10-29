@@ -24,7 +24,7 @@ const CircularProgress = ({
             <Svg width={size} height={size}>
                 {/* Background circle */}
                 <Circle
-                    stroke="#e6e6e6"
+                    stroke="#dadadaff"
                     fill="none"
                     cx={size / 2}
                     cy={size / 2}
@@ -42,9 +42,7 @@ const CircularProgress = ({
                     strokeDasharray={circumference}
                     strokeDashoffset={strokeDashoffset}
                     strokeLinecap="round"
-                    rotation="-90"
-                    originX={size / 2}
-                    originY={size / 2}
+                    transform={`rotate(-90 ${size / 2} ${size / 2})`}
                 />
             </Svg>
 

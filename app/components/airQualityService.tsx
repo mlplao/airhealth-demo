@@ -58,26 +58,44 @@ function getAirQualityPercentage(aqi: number, category: string): number {
 
     // Adjust by category for smoother feel
     const simplified = simplifyStatus(category);
+    let min: number, max: number;
+
     switch (simplified) {
         case "Good":
-            raw = Math.max(90, raw);
+            min = 90;
+            max = 98;
             break;
         case "Moderate":
-            raw = Math.min(89, Math.max(70, raw));
+            min = 70;
+            max = 89;
             break;
         case "Unhealthy for Sensitive":
-            raw = Math.min(69, Math.max(50, raw));
+            min = 50;
+            max = 69;
             break;
         case "Unhealthy":
-            raw = Math.min(49, Math.max(30, raw));
+            min = 30;
+            max = 49;
             break;
         case "Very Unhealthy":
-            raw = Math.min(29, Math.max(10, raw));
+            min = 10;
+            max = 29;
             break;
         case "Hazardous":
-            raw = Math.min(9, Math.max(0, raw));
+            min = 0;
+            max = 9;
             break;
+        default:
+            min = 0;
+            max = 100;
     }
+
+    // Constrain to category range
+    raw = Math.min(max, Math.max(min, raw));
+
+    // Add subtle variation (±2 points) while staying in range
+    const variation = (Math.random() - 0.5) * 4;
+    raw = Math.min(max, Math.max(min, raw + variation));
 
     return Math.round(raw);
 }
