@@ -1,4 +1,5 @@
 import { Redirect, Stack } from "expo-router";
+import { StatusBar } from "expo-status-bar";
 import React from "react";
 import { AuthProvider, useAuth } from "./context/authContext";
 
@@ -16,8 +17,9 @@ function RootNavigator() {
 export default function RootLayout() {
     return (
         <AuthProvider>
+            {/* Light Mode */}
+            <StatusBar style="dark" />
             <RootNavigator />
-
             <Stack>
                 <Stack.Screen name="(auth)" options={{ headerShown: false }} />
                 <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
