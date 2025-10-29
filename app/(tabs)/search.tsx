@@ -211,12 +211,13 @@ export default function Search() {
             )}
 
             {/* Recent Searches */}
-            {query.length === 0 && recentSearches.length > 0 && (
-                <View className="w-[80%] mt-6">
-                    <Text className="text-gray-600 text-lg mb-3">
-                        Recent Searches
-                    </Text>
-                    {recentSearches.map((item, index) => (
+            <View className="w-[80%] mt-6">
+                <Text className="text-gray-600 text-lg mb-3">
+                    Recent Searches
+                </Text>
+                {query.length === 0 &&
+                    recentSearches.length > 0 &&
+                    recentSearches.map((item, index) => (
                         <TouchableOpacity
                             key={index}
                             onPress={() => handleSelectPlace(item)}
@@ -237,8 +238,7 @@ export default function Search() {
                             </Text>
                         </TouchableOpacity>
                     ))}
-                </View>
-            )}
+            </View>
         </ScrollView>
     );
 }
