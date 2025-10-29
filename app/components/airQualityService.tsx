@@ -11,6 +11,7 @@ export interface AirQualityData {
     percentage: number;
     status: string;
     aqi: number; // Added AQI value for reference
+    color: string; // Added color field (in hex format)
 }
 
 export interface PollutantsData {
@@ -23,6 +24,16 @@ export interface PollutantsData {
 }
 
 const GOOGLE_API_KEY = "AIzaSyCDnj-plCPLhZUgdc7VDGX-DITm2pZAYA8"; // <-- replace with your key
+
+function normalizedColorToHex(color: any): string {
+    if (!color) return "#A9A9A9"; // default gray if missing
+    const toHex = (c: number) =>
+        Math.round(c * 255)
+            .toString(16)
+            .padStart(2, "0")
+            .toUpperCase();
+    return `#${toHex(color.red)}${toHex(color.green)}${toHex(color.blue)}`;
+}
 
 function simplifyStatus(category: string): string {
     if (!category) return "Unknown";
@@ -124,15 +135,23 @@ const airQualityService = {
             const aqi = data?.indexes?.[0]?.aqi || 0;
             const rawCategory = data?.indexes?.[0]?.category || "Unknown";
             const status = simplifyStatus(rawCategory);
-            console.log(index);
+            const colorData = index?.color || null; // get color data
 
             // Calculate percentage using improved algorithm
             const percentage = getAirQualityPercentage(aqi, rawCategory);
 
-            return { percentage, status, aqi };
+            // convert to hex
+            const color = normalizedColorToHex(colorData);
+
+            return { percentage, status, aqi, color };
         } catch (error) {
             console.error("Error fetching air quality:", error);
-            return { percentage: 0, status: "Unavailable", aqi: 0 };
+            return {
+                percentage: 0,
+                status: "Unavailable",
+                aqi: 0,
+                color: "#A9A9A9", // fallback gray
+            };
         }
     },
 

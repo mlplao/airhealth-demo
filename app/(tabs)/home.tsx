@@ -30,6 +30,7 @@ export default function Index() {
     const [airQuality, setAirQuality] = useState<{
         percentage: number;
         status: string;
+        color: string;
     } | null>(null);
     const [pollutants, setPollutants] = useState<{
         pm25: number;
@@ -98,7 +99,8 @@ export default function Index() {
                 <CircularProgress
                     percentage={airQuality?.percentage || 0}
                     size={180}
-                    strokeWidth={25}
+                    strokeWidth={10}
+                    color={airQuality?.color}
                 />
             </View>
 
