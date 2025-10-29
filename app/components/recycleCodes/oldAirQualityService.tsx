@@ -29,7 +29,7 @@ function simplifyStatus(category: string): string {
 
     const lower = category.toLowerCase();
 
-    if (lower.includes("good")) return "Good";
+    if (lower.includes("good") || lower.includes("excellent")) return "Good";
     if (lower.includes("moderate")) return "Moderate";
     if (lower.includes("unhealthy for sensitive groups"))
         return "Unhealthy for Sensitive";
