@@ -37,6 +37,14 @@ export default function RootLayout() {
                         headerBackTitle: "Back",
                     }}
                 />
+                <Stack.Screen
+                    name="reportFunc"
+                    options={{
+                        headerShown: true,
+                        title: "Create Report",
+                        headerBackTitle: "Back",
+                    }}
+                />
             </Stack>
         </AuthProvider>
     );
