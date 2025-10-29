@@ -81,12 +81,12 @@ const Airmap = () => {
                 ]}
             >
                 <UrlTile
-                    urlTemplate={`https://airquality.googleapis.com/v1/mapTypes/US_AQI/heatmapTiles/{z}/{x}/{y}?key=${API_KEY}`}
+                    urlTemplate={`https://airquality.googleapis.com/v1/mapTypes/UAQI_RED_GREEN/heatmapTiles/{z}/{x}/{y}?key=${API_KEY}`}
                     zIndex={0}
                     maximumZ={20}
                     flipY={false}
                     tileSize={256}
-                    opacity={heatmapVisible ? 1 : 0}
+                    opacity={heatmapVisible ? 0.7 : 0}
                 />
 
                 {/* Marker */}

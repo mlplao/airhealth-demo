@@ -29,7 +29,7 @@ function simplifyStatus(category: string): string {
 
     const lower = category.toLowerCase();
 
-    if (lower.includes("good")) return "Good";
+    if (lower.includes("good") || lower.includes("excellent")) return "Good";
     if (lower.includes("moderate")) return "Moderate";
     if (lower.includes("unhealthy for sensitive groups"))
         return "Unhealthy for Sensitive";
@@ -40,49 +40,35 @@ function simplifyStatus(category: string): string {
     return category.split(" ")[0];
 }
 
-function getAirQualityPercentage(
-    aqi: number,
-    scale: "universal" | "us" = "universal"
-): number {
-    // Convert UAQI → US AQI approximation (based on empirical mapping)
-    // Source: Google Air Quality docs + EPA scale comparison
-    let usAqi = aqi;
-    if (scale === "universal") {
-        if (aqi <= 50) {
-            usAqi = aqi * 1.3; // slight boost for lower values
-        } else if (aqi <= 100) {
-            usAqi = 50 + (aqi - 50) * 1.4;
-        } else if (aqi <= 200) {
-            usAqi = 120 + (aqi - 100) * 1.2;
-        } else {
-            usAqi = aqi * 1.1; // rough linear stretch for high values
-        }
+function getAirQualityPercentage(aqi: number, category: string): number {
+    // Convert AQI (0–500) into a 0–100 scale (inversely)
+    // 0 AQI = 100%, 500 AQI = 0%
+    let raw = Math.max(0, Math.min(100, 100 - (aqi / 500) * 100));
+
+    // Adjust by category for smoother feel
+    const simplified = simplifyStatus(category);
+    switch (simplified) {
+        case "Good":
+            raw = Math.max(90, raw);
+            break;
+        case "Moderate":
+            raw = Math.min(89, Math.max(70, raw));
+            break;
+        case "Unhealthy for Sensitive":
+            raw = Math.min(69, Math.max(50, raw));
+            break;
+        case "Unhealthy":
+            raw = Math.min(49, Math.max(30, raw));
+            break;
+        case "Very Unhealthy":
+            raw = Math.min(29, Math.max(10, raw));
+            break;
+        case "Hazardous":
+            raw = Math.min(9, Math.max(0, raw));
+            break;
     }
 
-    // Now apply your standard US AQI → % conversion
-    let percent: number;
-
-    if (usAqi <= 50) {
-        // Good (Green)
-        percent = 90 + (50 - usAqi) * 0.2;
-    } else if (usAqi <= 100) {
-        // Moderate (Yellow)
-        percent = 90 - ((usAqi - 50) / 50) * 20;
-    } else if (usAqi <= 150) {
-        // Unhealthy for Sensitive Groups (Orange)
-        percent = 70 - ((usAqi - 100) / 50) * 20;
-    } else if (usAqi <= 200) {
-        // Unhealthy (Red)
-        percent = 50 - ((usAqi - 150) / 50) * 20;
-    } else if (usAqi <= 300) {
-        // Very Unhealthy (Purple)
-        percent = 30 - ((usAqi - 200) / 100) * 20;
-    } else {
-        // Hazardous (Maroon)
-        percent = Math.max(0, 10 - ((usAqi - 300) / 200) * 10);
-    }
-
-    return Math.max(0, Math.min(100, Math.round(percent)));
+    return Math.round(raw);
 }
 
 const airQualityService = {
@@ -138,9 +124,10 @@ const airQualityService = {
             const aqi = data?.indexes?.[0]?.aqi || 0;
             const rawCategory = data?.indexes?.[0]?.category || "Unknown";
             const status = simplifyStatus(rawCategory);
+            console.log(index);
 
             // Calculate percentage using improved algorithm
-            const percentage = getAirQualityPercentage(aqi);
+            const percentage = getAirQualityPercentage(aqi, rawCategory);
 
             return { percentage, status, aqi };
         } catch (error) {
