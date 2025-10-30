@@ -18,9 +18,14 @@ import Header from "../header";
 // Vector Icons
 import { AntDesign } from "@expo/vector-icons";
 import HealthRecommendationModal from "../components/healthRecommendationModal";
-// Modal
+// Auth
+import { useAuth } from "../context/authContext";
+// Firestore
+import { doc, setDoc } from "firebase/firestore";
+import { db } from "../../firebaseconfig";
 
 export default function Index() {
+    const { user } = useAuth();
     const paddingTop =
         Platform.OS === "ios" ? 44 : StatusBar.currentHeight || 0;
     const [modalVisible, setModalVisible] = useState(false);
@@ -31,6 +36,7 @@ export default function Index() {
         percentage: number;
         status: string;
         color: string;
+        aqi: number;
     } | null>(null);
     const [pollutants, setPollutants] = useState<{
         pm25: number;
@@ -44,6 +50,27 @@ export default function Index() {
         airQuality?.status || "Unknown",
         airQuality?.percentage || 0
     );
+
+    const saveLocationToFirestore = async (loc: LocationData, aqi: number) => {
+        if (!user?.uid) return;
+
+        try {
+            const userRef = doc(db, "users", user.uid);
+            await setDoc(
+                userRef,
+                {
+                    currentCity: loc.city,
+                    currentLong: loc.longitude,
+                    currentLat: loc.latitude,
+                    currentAqi: aqi,
+                },
+                { merge: true }
+            );
+            console.log("Location data saved to Firestore");
+        } catch (error) {
+            console.error("Error saving location to Firestore:", error);
+        }
+    };
 
     useEffect(() => {
         (async () => {
@@ -62,6 +89,9 @@ export default function Index() {
                     loc.longitude
                 );
                 setPollutants(pol);
+
+                // Save location data to Firestore
+                await saveLocationToFirestore(loc, aqi.aqi);
             } catch (error) {
                 console.error(error);
             }
