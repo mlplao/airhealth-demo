@@ -37,3 +37,4 @@ yarn-error.*
 *.tsbuildinfo
 
 app-example
+airhealth-backend/firebase-key.json
