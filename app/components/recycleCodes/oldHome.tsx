@@ -2,7 +2,6 @@ import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
-    Alert,
     Platform,
     ScrollView,
     StatusBar,
@@ -12,31 +11,17 @@ import {
 } from "react-native";
 import airQualityService, {
     LocationData,
-} from "../components/airQualityService";
-import CircularProgress from "../components/circleProgress";
-import "../global.css";
-import Header from "../header";
+} from "../../components/airQualityService";
+import CircularProgress from "../../components/circleProgress";
+import "../../global.css";
 // Vector Icons
 import { AntDesign } from "@expo/vector-icons";
-import HealthRecommendationModal from "../components/healthRecommendationModal";
+import HealthRecommendationModal from "../../components/healthRecommendationModal";
 // Auth
-import { useAuth } from "../context/authContext";
+import { useAuth } from "../../context/authContext";
 // Firestore
 import { doc, setDoc } from "firebase/firestore";
-import { db } from "../../firebaseconfig";
-// Notifications
-import * as Notifications from "expo-notifications";
-
-// Configure how notifications behave when received while the app is foregrounded
-Notifications.setNotificationHandler({
-    handleNotification: async () => ({
-        shouldShowAlert: true,
-        shouldPlaySound: true,
-        shouldSetBadge: false,
-        shouldShowBanner: true,
-        shouldShowList: true,
-    }),
-});
+import { db } from "../../../firebaseconfig";
 
 export default function Index() {
     const { user } = useAuth();
@@ -65,28 +50,6 @@ export default function Index() {
         airQuality?.percentage || 0
     );
 
-    // Request notification permissions
-    const requestNotificationPermissions = async () => {
-        const { status: existingStatus } =
-            await Notifications.getPermissionsAsync();
-        let finalStatus = existingStatus;
-
-        if (existingStatus !== "granted") {
-            const { status } = await Notifications.requestPermissionsAsync();
-            finalStatus = status;
-        }
-
-        if (finalStatus !== "granted") {
-            Alert.alert(
-                "Permission Required",
-                "Please enable notifications to receive air quality alerts!"
-            );
-            return;
-        }
-
-        // console.log("Notification permissions granted!");
-    };
-
     const saveLocationToFirestore = async (loc: LocationData, aqi: number) => {
         if (!user?.uid) return;
 
@@ -111,9 +74,6 @@ export default function Index() {
     useEffect(() => {
         (async () => {
             try {
-                // Request notification permissions
-                await requestNotificationPermissions();
-
                 const loc = await airQualityService.getCurrentLocation();
                 setLocation(loc);
 
@@ -135,26 +95,6 @@ export default function Index() {
                 console.error(error);
             }
         })();
-
-        // Handle notifications when app is open
-        const notificationListener =
-            Notifications.addNotificationReceivedListener((notification) => {
-                console.log("Notification received:", notification);
-            });
-
-        // Handle notification taps
-        const responseListener =
-            Notifications.addNotificationResponseReceivedListener(
-                (response) => {
-                    console.log("Notification clicked:", response);
-                    router.push("/(tabs)/home");
-                }
-            );
-
-        return () => {
-            notificationListener.remove();
-            responseListener.remove();
-        };
     }, []);
 
     return (
@@ -167,8 +107,6 @@ export default function Index() {
             }}
             showsVerticalScrollIndicator={false}
         >
-            <Header />
-
             {/* City */}
             <Text className="text-4xl font-bold text-black shadow-lg shadow-black/15 mb-4">
                 {location ? location.city : "Loading location..."}
