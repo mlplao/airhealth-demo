@@ -5,6 +5,11 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+// Routes
+// app.use("/api/reports", reportRoutes);
+// app.use("/api/notifications", notificationRoutes);
+
+// Default route
 app.get("/", (req, res) => {
     res.send("AirHealth Backend is running");
 });
