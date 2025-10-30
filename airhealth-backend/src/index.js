@@ -1,13 +1,12 @@
 import cors from "cors";
 import express from "express";
-import reportRoutes from "./routes/reports.js";
 
 const app = express();
 app.use(cors());
 app.use(express.json());
 
 // Routes
-app.use("/api/reports", reportRoutes);
+// app.use("/api/reports", reportRoutes);
 // app.use("/api/notifications", notificationRoutes);
 
 // Default route
