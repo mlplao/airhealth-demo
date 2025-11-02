@@ -1,5 +1,12 @@
 import { router } from "expo-router";
-import { collection, onSnapshot, orderBy, query } from "firebase/firestore";
+import {
+    collection,
+    doc,
+    getDoc,
+    onSnapshot,
+    orderBy,
+    query,
+} from "firebase/firestore";
 import React, { useEffect, useState } from "react";
 import {
     ActivityIndicator,
@@ -23,12 +30,19 @@ interface ReportPost {
     name?: string;
 }
 
+interface PinnedReportData {
+    message: string;
+    imageBase64?: string | null;
+}
+
 const Report = () => {
     const paddingTop =
         Platform.OS === "ios" ? 44 : StatusBar.currentHeight || 0;
 
     const [posts, setPosts] = useState<ReportPost[]>([]);
     const [loading, setLoading] = useState(true);
+    const [pinned, setPinned] = useState<PinnedReportData | null>(null);
+    const [pinnedLoading, setPinnedLoading] = useState(true);
 
     useEffect(() => {
         const q = query(
@@ -46,6 +60,23 @@ const Report = () => {
         });
 
         return unsubscribe;
+    }, []);
+
+    useEffect(() => {
+        const fetchPinnedReport = async () => {
+            try {
+                const pinnedDoc = await getDoc(doc(db, "pinned", "report"));
+                if (pinnedDoc.exists()) {
+                    setPinned(pinnedDoc.data() as PinnedReportData);
+                }
+            } catch (error) {
+                console.error("Error fetching pinned report:", error);
+            } finally {
+                setPinnedLoading(false);
+            }
+        };
+
+        fetchPinnedReport();
     }, []);
 
     return (
@@ -75,6 +106,50 @@ const Report = () => {
                     Report
                 </Text>
             </TouchableOpacity>
+
+            {/* Modify - This should show the pinned report */}
+            {pinnedLoading ? (
+                <View className="w-[80%] items-center justify-center py-6">
+                    <ActivityIndicator size="small" color="#666" />
+                    <Text className="text-gray-500 mt-2 text-sm">
+                        Loading pinned report...
+                    </Text>
+                </View>
+            ) : pinned ? (
+                <>
+                    <View className="w-[80%] p-4 rounded-xl shadow-lg shadow-black/10 bg-white mb-6 border border-blue-400">
+                        <View className="w-full items-center mb-2">
+                            <Text className="font-bold text-blue-600 text-lg">
+                                AirHealth Admin
+                            </Text>
+                        </View>
+
+                        {/* Pinned Message */}
+                        <Text className="text-base text-gray-900 mb-2">
+                            {pinned.message || "No pinned message yet."}
+                        </Text>
+
+                        {/* Pinned Image (optional) */}
+                        {pinned.imageBase64 && (
+                            <Image
+                                source={{ uri: pinned.imageBase64 }}
+                                className="w-full h-40 rounded-lg bg-gray-200 mt-2"
+                                resizeMode="cover"
+                            />
+                        )}
+                    </View>
+                </>
+            ) : (
+                <>
+                    <View className="w-[80%] p-4 rounded-xl bg-gray-100 mb-6">
+                        <Text className="text-gray-600 italic text-center">
+                            Pinned report available.
+                        </Text>
+                    </View>
+                </>
+            )}
+
+            <View className="container w-[80%] border-b border-gray-400 mb-6"></View>
 
             {/* Posts */}
             {loading ? (
