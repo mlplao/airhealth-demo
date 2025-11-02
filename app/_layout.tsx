@@ -2,9 +2,13 @@ import { Redirect, Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import React from "react";
 import { AuthProvider, useAuth } from "./context/authContext";
+import { useNotifications } from "./utils/useNotifications";
 
 function RootNavigator() {
     const { user } = useAuth();
+
+    // Setup notifications globally
+    useNotifications();
 
     // Redirect depending on login status
     if (user === null) {
@@ -20,6 +24,7 @@ export default function RootLayout() {
             {/* Light Mode */}
             <StatusBar style="dark" />
             <RootNavigator />
+
             <Stack>
                 <Stack.Screen name="(auth)" options={{ headerShown: false }} />
                 <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
