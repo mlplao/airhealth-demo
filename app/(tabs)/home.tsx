@@ -2,7 +2,6 @@ import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
-    Alert,
     Platform,
     ScrollView,
     StatusBar,
@@ -25,10 +24,8 @@ import { useAuth } from "../context/authContext";
 import { doc, setDoc } from "firebase/firestore";
 import { db } from "../../firebaseconfig";
 // Notifications
-import * as Device from "expo-device";
-import * as Notifications from "expo-notifications";
+import { setupNotifications } from "../utils/notifications";
 
-// Configure how notifications behave when received while the app is foregrounded
 export default function Index() {
     const { user } = useAuth();
     const paddingTop =
@@ -55,41 +52,6 @@ export default function Index() {
         airQuality?.status || "Unknown",
         airQuality?.percentage || 0
     );
-
-    // Request notification permissions and get token
-    const setupNotifications = async () => {
-        if (!Device.isDevice) {
-            console.log("Must use physical device for notifications");
-            return null;
-        }
-
-        // Request permissions
-        const { status: existingStatus } =
-            await Notifications.getPermissionsAsync();
-        let finalStatus = existingStatus;
-
-        if (existingStatus !== "granted") {
-            const { status } = await Notifications.requestPermissionsAsync();
-            finalStatus = status;
-        }
-
-        if (finalStatus !== "granted") {
-            Alert.alert(
-                "Permission Required",
-                "Please enable notifications to receive air quality alerts!"
-            );
-            return null;
-        }
-
-        // Get push token
-        try {
-            const tokenData = await Notifications.getExpoPushTokenAsync();
-            return tokenData.data;
-        } catch (error) {
-            console.log("Error getting push token:", error);
-            return null;
-        }
-    };
 
     const saveToFirestore = async (
         loc: LocationData,
@@ -145,26 +107,6 @@ export default function Index() {
                 console.error(error);
             }
         })();
-
-        // Handle notifications when app is open
-        const notificationListener =
-            Notifications.addNotificationReceivedListener((notification) => {
-                console.log("Notification received:", notification);
-            });
-
-        // Handle notification taps
-        const responseListener =
-            Notifications.addNotificationResponseReceivedListener(
-                (response) => {
-                    console.log("Notification clicked:", response);
-                    router.push("/(tabs)/home");
-                }
-            );
-
-        return () => {
-            notificationListener.remove();
-            responseListener.remove();
-        };
     }, []);
 
     return (
