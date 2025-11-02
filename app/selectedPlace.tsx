@@ -2,7 +2,9 @@ import { AntDesign } from "@expo/vector-icons";
 import { useLocalSearchParams } from "expo-router";
 import React, { useEffect, useState } from "react";
 import { ScrollView, Text, TouchableOpacity, View } from "react-native";
-import airQualityService from "./components/airQualityService";
+import airQualityService, {
+    PollutantsData,
+} from "./components/airQualityService";
 import CircularProgress from "./components/circleProgress";
 import HealthRecommendationModal from "./components/healthRecommendationModal";
 import "./global.css";
@@ -21,15 +23,10 @@ export default function SelectedPlace() {
     const [airQuality, setAirQuality] = useState<{
         percentage: number;
         status: string;
+        color?: string;
     } | null>(null);
-    const [pollutants, setPollutants] = useState<{
-        pm25: number;
-        pm10: number;
-        o3: number;
-        co: number;
-        no2: number;
-        so2: number;
-    } | null>(null);
+
+    const [pollutants, setPollutants] = useState<PollutantsData | null>(null);
 
     const recommendation = airQualityService.getHealthRecommendation(
         airQuality?.status || "Unknown",
@@ -70,7 +67,7 @@ export default function SelectedPlace() {
             <Header />
 
             {/* City Name */}
-            <Text className="text-4xl font-bold text-black shadow-lg shadow-black/15 mb-4">
+            <Text className="text-4xl font-bold text-black shadow-lg shadow-black/15 mb-4 text-center px-3">
                 {location_name || "Unknown Location"}
             </Text>
 
@@ -88,7 +85,8 @@ export default function SelectedPlace() {
                 <CircularProgress
                     percentage={airQuality?.percentage || 0}
                     size={180}
-                    strokeWidth={25}
+                    strokeWidth={10}
+                    color={airQuality?.color}
                 />
             </View>
 
@@ -111,33 +109,72 @@ export default function SelectedPlace() {
 
             {/* Pollutants */}
             {pollutants ? (
-                [
-                    { label: "PM2.5", value: `${pollutants.pm25} µg/m³` },
-                    { label: "PM10", value: `${pollutants.pm10} µg/m³` },
-                    { label: "O₃", value: `${pollutants.o3} µg/m³` },
-                    { label: "CO", value: `${pollutants.co} µg/m³` },
-                    { label: "NO₂", value: `${pollutants.no2} µg/m³` },
-                    { label: "SO₂", value: `${pollutants.so2} µg/m³` },
-                ].map((item, index) => (
-                    <TouchableOpacity
-                        key={index}
-                        className="w-[80%] h-[70px] bg-white rounded-[20px] mb-8 items-center justify-center flex flex-row p-6"
-                        style={{
-                            shadowColor: "#000",
-                            shadowOffset: { width: 0, height: 0 },
-                            shadowOpacity: 0.15,
-                            shadowRadius: 6,
-                            elevation: 6,
-                        }}
-                    >
-                        <Text className="w-[60%] font-bold text-lg">
-                            {item.label}
-                        </Text>
-                        <Text className="w-[40%] font-bold text-lg">
-                            {item.value}
-                        </Text>
-                    </TouchableOpacity>
-                ))
+                (() => {
+                    const pollutantList = [
+                        { label: "PM2.5", key: "pm25", data: pollutants.pm25 },
+                        { label: "PM10", key: "pm10", data: pollutants.pm10 },
+                        { label: "O₃", key: "o3", data: pollutants.o3 },
+                        { label: "CO", key: "co", data: pollutants.co },
+                        { label: "NO₂", key: "no2", data: pollutants.no2 },
+                        { label: "SO₂", key: "so2", data: pollutants.so2 },
+                    ];
+
+                    return pollutantList.map((item, index) => (
+                        <TouchableOpacity
+                            key={index}
+                            className="w-[80%] bg-white rounded-[20px] mb-6 p-5"
+                            activeOpacity={0.9}
+                            style={{
+                                shadowColor: "#000",
+                                shadowOffset: { width: 0, height: 0 },
+                                shadowOpacity: 0.15,
+                                shadowRadius: 6,
+                                elevation: 6,
+                            }}
+                        >
+                            {/* Top Row: Label (left) and Value (right) */}
+                            <View className="flex-row items-center justify-between">
+                                <Text className="font-bold text-lg text-gray-900">
+                                    {item.label}
+                                </Text>
+                                <View className="items-end">
+                                    <Text className="font-semibold text-lg text-gray-800">
+                                        {item.data?.value ?? 0} µg/m³
+                                    </Text>
+                                    <Text
+                                        className={`text-sm font-medium mt-1 ${
+                                            item.data?.status === "Good"
+                                                ? "text-green-600"
+                                                : item.data?.status?.includes(
+                                                        "Moderate"
+                                                    )
+                                                  ? "text-yellow-600"
+                                                  : item.data?.status?.includes(
+                                                          "Unhealthy for Sensitive"
+                                                      )
+                                                    ? "text-orange-600"
+                                                    : item.data?.status?.includes(
+                                                            "Unhealthy"
+                                                        )
+                                                      ? "text-red-600"
+                                                      : item.data?.status?.includes(
+                                                              "Very Unhealthy"
+                                                          )
+                                                        ? "text-purple-600"
+                                                        : item.data?.status?.includes(
+                                                                "Hazardous"
+                                                            )
+                                                          ? "text-rose-700"
+                                                          : "text-gray-600"
+                                        }`}
+                                    >
+                                        {item.data?.status || "Unknown"}
+                                    </Text>
+                                </View>
+                            </View>
+                        </TouchableOpacity>
+                    ));
+                })()
             ) : (
                 <Text>Loading pollutants...</Text>
             )}
