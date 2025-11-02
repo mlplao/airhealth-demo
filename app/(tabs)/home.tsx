@@ -17,7 +17,10 @@ import "../global.css";
 import Header from "../header";
 // Vector Icons
 import { AntDesign } from "@expo/vector-icons";
+// Modals
 import HealthRecommendationModal from "../components/healthRecommendationModal";
+import PollutantDetailModal from "../components/pollutantDetailModal";
+import { pollutantDetails } from "../components/pollutantDetails";
 // Auth
 import { useAuth } from "../context/authContext";
 // Firestore
@@ -31,6 +34,9 @@ export default function Index() {
     const paddingTop =
         Platform.OS === "ios" ? 44 : StatusBar.currentHeight || 0;
     const [modalVisible, setModalVisible] = useState(false);
+    const [selectedPollutant, setSelectedPollutant] = useState<string | null>(
+        null
+    );
 
     // Health recommendation based on air quality status
     const [location, setLocation] = useState<LocationData | null>(null);
@@ -41,12 +47,12 @@ export default function Index() {
         aqi: number;
     } | null>(null);
     const [pollutants, setPollutants] = useState<{
-        pm25: number;
-        pm10: number;
-        o3: number;
-        co: number;
-        no2: number;
-        so2: number;
+        pm25: { value: number; status: string };
+        pm10: { value: number; status: string };
+        o3: { value: number; status: string };
+        co: { value: number; status: string };
+        no2: { value: number; status: string };
+        so2: { value: number; status: string };
     } | null>(null);
     const recommendation = airQualityService.getHealthRecommendation(
         airQuality?.status || "Unknown",
@@ -77,6 +83,15 @@ export default function Index() {
         } catch (error) {
             console.error("Error saving to Firestore:", error);
         }
+    };
+
+    const pollutantKeyMap: Record<string, string> = {
+        "PM2.5": "pm25",
+        PM10: "pm10",
+        "O₃": "o3",
+        CO: "co",
+        "NO₂": "no2",
+        "SO₂": "so2",
     };
 
     useEffect(() => {
@@ -200,37 +215,103 @@ export default function Index() {
             </View>
 
             {/* Pollutants */}
+            {/* Pollutants */}
             {pollutants ? (
-                [
-                    { label: "PM2.5", value: `${pollutants.pm25} µg/m³` },
-                    { label: "PM10", value: `${pollutants.pm10} µg/m³` },
-                    { label: "O₃", value: `${pollutants.o3} µg/m³` },
-                    { label: "CO", value: `${pollutants.co} µg/m³` },
-                    { label: "NO₂", value: `${pollutants.no2} µg/m³` },
-                    { label: "SO₂", value: `${pollutants.so2} µg/m³` },
-                ].map((item, index) => (
-                    <TouchableOpacity
-                        key={index}
-                        className="w-[80%] h-[70px] bg-white rounded-[20px] mb-8 items-center justify-center flex flex-row p-6"
-                        style={{
-                            shadowColor: "#000",
-                            shadowOffset: { width: 0, height: 0 },
-                            shadowOpacity: 0.15,
-                            shadowRadius: 6,
-                            elevation: 6,
-                        }}
-                    >
-                        <Text className="w-[60%] font-bold text-lg">
-                            {item.label}
-                        </Text>
-                        <Text className="w-[40%] font-bold text-lg">
-                            {item.value}
-                        </Text>
-                    </TouchableOpacity>
-                ))
+                (() => {
+                    // Fix label → key mapping (handles subscripts & dots)
+                    const pollutantKeyMap: Record<string, string> = {
+                        "PM2.5": "pm25",
+                        PM10: "pm10",
+                        "O₃": "o3",
+                        CO: "co",
+                        "NO₂": "no2",
+                        "SO₂": "so2",
+                    };
+
+                    // List of pollutants to display — now using pollutants with { value, status }
+                    const pollutantList = [
+                        { label: "PM2.5", key: "pm25", data: pollutants.pm25 },
+                        { label: "PM10", key: "pm10", data: pollutants.pm10 },
+                        { label: "O₃", key: "o3", data: pollutants.o3 },
+                        { label: "CO", key: "co", data: pollutants.co },
+                        { label: "NO₂", key: "no2", data: pollutants.no2 },
+                        { label: "SO₂", key: "so2", data: pollutants.so2 },
+                    ];
+
+                    return pollutantList.map((item, index) => (
+                        <TouchableOpacity
+                            key={index}
+                            className="w-[80%] bg-white rounded-[20px] mb-6 p-5"
+                            onPress={() => {
+                                const key = pollutantKeyMap[item.label];
+                                console.log("🧠 Selected pollutant key:", key);
+                                setSelectedPollutant(key);
+                            }}
+                            style={{
+                                shadowColor: "#000",
+                                shadowOffset: { width: 0, height: 0 },
+                                shadowOpacity: 0.15,
+                                shadowRadius: 6,
+                                elevation: 6,
+                            }}
+                        >
+                            {/* Top Row: Label (left) and Value (right) */}
+                            <View className="flex-row items-center justify-between">
+                                <Text className="font-bold text-lg text-gray-900">
+                                    {item.label}
+                                </Text>
+                                <View className="items-end">
+                                    <Text className="font-semibold text-lg text-gray-800">
+                                        {item.data?.value ?? 0} µg/m³
+                                    </Text>
+                                    <Text
+                                        className={`text-sm font-medium mt-1 ${
+                                            item.data?.status === "Good"
+                                                ? "text-green-600"
+                                                : item.data?.status?.includes(
+                                                        "Moderate"
+                                                    )
+                                                  ? "text-yellow-600"
+                                                  : item.data?.status?.includes(
+                                                          "Unhealthy for Sensitive"
+                                                      )
+                                                    ? "text-orange-600"
+                                                    : item.data?.status?.includes(
+                                                            "Unhealthy"
+                                                        )
+                                                      ? "text-red-600"
+                                                      : item.data?.status?.includes(
+                                                              "Very Unhealthy"
+                                                          )
+                                                        ? "text-purple-600"
+                                                        : item.data?.status?.includes(
+                                                                "Hazardous"
+                                                            )
+                                                          ? "text-rose-700"
+                                                          : "text-gray-600"
+                                        }`}
+                                    >
+                                        {item.data?.status || "Unknown"}
+                                    </Text>
+                                </View>
+                            </View>
+                        </TouchableOpacity>
+                    ));
+                })()
             ) : (
                 <Text>Loading pollutants...</Text>
             )}
+
+            {/* 🧩 Pollutant Detail Modal */}
+            <PollutantDetailModal
+                visible={!!selectedPollutant}
+                onClose={() => setSelectedPollutant(null)}
+                pollutantInfo={
+                    selectedPollutant
+                        ? pollutantDetails[selectedPollutant]
+                        : undefined
+                }
+            />
         </ScrollView>
     );
 }

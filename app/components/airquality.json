@@ -1,0 +1,56 @@
+[
+    {
+        "code": "co",
+        "concentration": {
+            "units": "PARTS_PER_BILLION",
+            "value": 350.41
+        },
+        "displayName": "CO",
+        "fullName": "Carbon monoxide"
+    },
+    {
+        "code": "no2",
+        "concentration": {
+            "units": "PARTS_PER_BILLION",
+            "value": 22.71
+        },
+        "displayName": "NO2",
+        "fullName": "Nitrogen dioxide"
+    },
+    {
+        "code": "o3",
+        "concentration": {
+            "units": "PARTS_PER_BILLION",
+            "value": 9.94
+        },
+        "displayName": "O3",
+        "fullName": "Ozone"
+    },
+    {
+        "code": "pm10",
+        "concentration": {
+            "units": "MICROGRAMS_PER_CUBIC_METER",
+            "value": 27.97
+        },
+        "displayName": "PM10",
+        "fullName": "Inhalable particulate matter (<10µm)"
+    },
+    {
+        "code": "pm25",
+        "concentration": {
+            "units": "MICROGRAMS_PER_CUBIC_METER",
+            "value": 24.06
+        },
+        "displayName": "PM2.5",
+        "fullName": "Fine particulate matter (<2.5µm)"
+    },
+    {
+        "code": "so2",
+        "concentration": {
+            "units": "PARTS_PER_BILLION",
+            "value": 6
+        },
+        "displayName": "SO2",
+        "fullName": "Sulfur dioxide"
+    }
+]

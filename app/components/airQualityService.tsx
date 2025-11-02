@@ -15,15 +15,76 @@ export interface AirQualityData {
 }
 
 export interface PollutantsData {
-    pm25: number;
-    pm10: number;
-    o3: number;
-    co: number;
-    no2: number;
-    so2: number;
+    pm25: { value: number; status: string };
+    pm10: { value: number; status: string };
+    o3: { value: number; status: string };
+    co: { value: number; status: string };
+    no2: { value: number; status: string };
+    so2: { value: number; status: string };
 }
 
 const GOOGLE_API_KEY = "AIzaSyCDnj-plCPLhZUgdc7VDGX-DITm2pZAYA8"; // <-- replace with your key
+
+// For pollutants status computation
+function getPollutantStatus(code: string, value: number): string {
+    // Convert units to align with EPA standard scales
+    switch (code) {
+        case "o3":
+            // Convert ppb → ppm (from parts per billion to parts per billion)
+            value = value / 1000;
+            if (value <= 0.054) return "Good";
+            if (value <= 0.07) return "Moderate";
+            if (value <= 0.085) return "Unhealthy for Sensitive";
+            if (value <= 0.105) return "Unhealthy";
+            if (value <= 0.2) return "Very Unhealthy";
+            return "Hazardous";
+
+        case "co":
+            // Convert ppb → ppm (from parts per billion to parts per billion)
+            value = value / 1000;
+            if (value <= 4.4) return "Good";
+            if (value <= 9.4) return "Moderate";
+            if (value <= 12.4) return "Unhealthy for Sensitive";
+            if (value <= 15.4) return "Unhealthy";
+            if (value <= 30.4) return "Very Unhealthy";
+            return "Hazardous";
+
+        case "pm25":
+            if (value <= 12.0) return "Good";
+            if (value <= 35.4) return "Moderate";
+            if (value <= 55.4) return "Unhealthy for Sensitive";
+            if (value <= 150.4) return "Unhealthy";
+            if (value <= 250.4) return "Very Unhealthy";
+            return "Hazardous";
+
+        case "pm10":
+            if (value <= 54) return "Good";
+            if (value <= 154) return "Moderate";
+            if (value <= 254) return "Unhealthy for Sensitive";
+            if (value <= 354) return "Unhealthy";
+            if (value <= 424) return "Very Unhealthy";
+            return "Hazardous";
+
+        case "no2":
+            if (value <= 53) return "Good";
+            if (value <= 100) return "Moderate";
+            if (value <= 360) return "Unhealthy for Sensitive";
+            if (value <= 649) return "Unhealthy";
+            if (value <= 1249) return "Very Unhealthy";
+            return "Hazardous";
+
+        case "so2":
+            if (value <= 35) return "Good";
+            if (value <= 75) return "Moderate";
+            if (value <= 185) return "Unhealthy for Sensitive";
+            if (value <= 304) return "Unhealthy";
+            if (value <= 604) return "Very Unhealthy";
+            return "Hazardous";
+
+        default:
+            return "Unknown";
+    }
+}
 
 function normalizedColorToHex(color: any): string {
     if (!color) return "#A9A9A9"; // default gray if missing
@@ -195,47 +256,44 @@ const airQualityService = {
             }
 
             const data = await response.json();
-
             const pollutants = data?.pollutants || [];
+
             const concentrations: PollutantsData = {
-                pm25: 0,
-                pm10: 0,
-                o3: 0,
-                co: 0,
-                no2: 0,
-                so2: 0,
+                pm25: { value: 0, status: "Unknown" },
+                pm10: { value: 0, status: "Unknown" },
+                o3: { value: 0, status: "Unknown" },
+                co: { value: 0, status: "Unknown" },
+                no2: { value: 0, status: "Unknown" },
+                so2: { value: 0, status: "Unknown" },
             };
 
             pollutants.forEach((p: any) => {
                 const code = p.code?.toLowerCase();
                 const value = p.concentration?.value || 0;
+                const rounded = Math.round(value * 100) / 100;
+                const status = getPollutantStatus(code, rounded);
 
-                switch (code) {
-                    case "pm25":
-                        concentrations.pm25 = Math.round(value * 100) / 100; // Round to 2 decimal places
-                        break;
-                    case "pm10":
-                        concentrations.pm10 = Math.round(value * 100) / 100;
-                        break;
-                    case "o3":
-                        concentrations.o3 = Math.round(value * 100) / 100;
-                        break;
-                    case "co":
-                        concentrations.co = Math.round(value * 100) / 100;
-                        break;
-                    case "no2":
-                        concentrations.no2 = Math.round(value * 100) / 100;
-                        break;
-                    case "so2":
-                        concentrations.so2 = Math.round(value * 100) / 100;
-                        break;
+                if (concentrations[code as keyof PollutantsData]) {
+                    (
+                        concentrations[code as keyof PollutantsData] as any
+                    ).value = rounded;
+                    (
+                        concentrations[code as keyof PollutantsData] as any
+                    ).status = status;
                 }
             });
 
             return concentrations;
         } catch (error) {
             console.error("Error fetching pollutants:", error);
-            return { pm25: 0, pm10: 0, o3: 0, co: 0, no2: 0, so2: 0 };
+            return {
+                pm25: { value: 0, status: "Unknown" },
+                pm10: { value: 0, status: "Unknown" },
+                o3: { value: 0, status: "Unknown" },
+                co: { value: 0, status: "Unknown" },
+                no2: { value: 0, status: "Unknown" },
+                so2: { value: 0, status: "Unknown" },
+            };
         }
     },
 
