@@ -25,19 +25,10 @@ import { useAuth } from "../context/authContext";
 import { doc, setDoc } from "firebase/firestore";
 import { db } from "../../firebaseconfig";
 // Notifications
+import * as Device from "expo-device";
 import * as Notifications from "expo-notifications";
 
 // Configure how notifications behave when received while the app is foregrounded
-Notifications.setNotificationHandler({
-    handleNotification: async () => ({
-        shouldShowAlert: true,
-        shouldPlaySound: true,
-        shouldSetBadge: false,
-        shouldShowBanner: true,
-        shouldShowList: true,
-    }),
-});
-
 export default function Index() {
     const { user } = useAuth();
     const paddingTop =
@@ -65,8 +56,14 @@ export default function Index() {
         airQuality?.percentage || 0
     );
 
-    // Request notification permissions
-    const requestNotificationPermissions = async () => {
+    // Request notification permissions and get token
+    const setupNotifications = async () => {
+        if (!Device.isDevice) {
+            console.log("Must use physical device for notifications");
+            return null;
+        }
+
+        // Request permissions
         const { status: existingStatus } =
             await Notifications.getPermissionsAsync();
         let finalStatus = existingStatus;
@@ -81,13 +78,24 @@ export default function Index() {
                 "Permission Required",
                 "Please enable notifications to receive air quality alerts!"
             );
-            return;
+            return null;
         }
 
-        // console.log("Notification permissions granted!");
+        // Get push token
+        try {
+            const tokenData = await Notifications.getExpoPushTokenAsync();
+            return tokenData.data;
+        } catch (error) {
+            console.log("Error getting push token:", error);
+            return null;
+        }
     };
 
-    const saveLocationToFirestore = async (loc: LocationData, aqi: number) => {
+    const saveToFirestore = async (
+        loc: LocationData,
+        aqi: number,
+        token: string | null
+    ) => {
         if (!user?.uid) return;
 
         try {
@@ -99,21 +107,23 @@ export default function Index() {
                     currentLong: loc.longitude,
                     currentLat: loc.latitude,
                     currentAqi: aqi,
+                    expoPushToken: token,
                 },
                 { merge: true }
             );
-            console.log("Location data saved to Firestore");
+            console.log("Data saved to Firestore successfully");
         } catch (error) {
-            console.error("Error saving location to Firestore:", error);
+            console.error("Error saving to Firestore:", error);
         }
     };
 
     useEffect(() => {
         (async () => {
             try {
-                // Request notification permissions
-                await requestNotificationPermissions();
+                // Setup notifications and get token
+                const pushToken = await setupNotifications();
 
+                // Get location and air quality data
                 const loc = await airQualityService.getCurrentLocation();
                 setLocation(loc);
 
@@ -129,8 +139,8 @@ export default function Index() {
                 );
                 setPollutants(pol);
 
-                // Save location data to Firestore
-                await saveLocationToFirestore(loc, aqi.aqi);
+                // Save everything to Firestore
+                await saveToFirestore(loc, aqi.aqi, pushToken);
             } catch (error) {
                 console.error(error);
             }
