@@ -19,6 +19,7 @@ import {
     View,
 } from "react-native";
 import { db } from "../../firebaseconfig";
+import ImageModal from "../components/imageModal";
 import Header from "../header";
 
 interface ReportPost {
@@ -43,6 +44,8 @@ const Report = () => {
     const [loading, setLoading] = useState(true);
     const [pinned, setPinned] = useState<PinnedReportData | null>(null);
     const [pinnedLoading, setPinnedLoading] = useState(true);
+    const [modalVisible, setModalVisible] = useState(false);
+    const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
     useEffect(() => {
         const q = query(
@@ -79,134 +82,167 @@ const Report = () => {
         fetchPinnedReport();
     }, []);
 
+    const handleImagePress = (imageUri: string) => {
+        setSelectedImage(imageUri);
+        setModalVisible(true);
+    };
+
+    const closeModal = () => {
+        setModalVisible(false);
+        setSelectedImage(null);
+    };
+
     return (
-        <ScrollView
-            className="flex-1"
-            contentContainerStyle={{
-                alignItems: "center",
-                paddingTop,
-                paddingBottom: 100,
-            }}
-            showsVerticalScrollIndicator={false}
-        >
-            <Header />
-            <Text className="text-2xl font-bold text-black text-shadow-lg mb-4">
-                Community Reporting
-            </Text>
-
-            {/* Create Report Button */}
-            <TouchableOpacity
-                className="w-[80%] h-12 rounded-xl shadow-lg shadow-black/10 flex items-center justify-center mb-8"
-                style={{ backgroundColor: "rgb(156, 163, 175)" }}
-                onPress={() => {
-                    router.push("/reportFunc");
+        <>
+            <ScrollView
+                className="flex-1"
+                contentContainerStyle={{
+                    alignItems: "center",
+                    paddingTop,
+                    paddingBottom: 100,
                 }}
+                showsVerticalScrollIndicator={false}
             >
-                <Text className="text-lg text-white text-shadow-md font-bold">
-                    Report
+                <Header />
+                <Text className="text-2xl font-bold text-black text-shadow-lg mb-4">
+                    Community Reporting
                 </Text>
-            </TouchableOpacity>
 
-            {/* Modify - This should show the pinned report */}
-            {pinnedLoading ? (
-                <View className="w-[80%] items-center justify-center py-6">
-                    <ActivityIndicator size="small" color="#666" />
-                    <Text className="text-gray-500 mt-2 text-sm">
-                        Loading pinned report...
+                {/* Create Report Button */}
+                <TouchableOpacity
+                    className="w-[80%] h-12 rounded-xl shadow-lg shadow-black/10 flex items-center justify-center mb-8"
+                    style={{ backgroundColor: "rgb(156, 163, 175)" }}
+                    onPress={() => {
+                        router.push("/reportFunc");
+                    }}
+                >
+                    <Text className="text-lg text-white text-shadow-md font-bold">
+                        Report
                     </Text>
-                </View>
-            ) : pinned ? (
-                <>
-                    <View className="w-[80%] p-4 rounded-xl shadow-lg shadow-black/10 bg-white mb-6 border border-blue-400">
-                        <View className="w-full items-center mb-2">
-                            <Text className="font-bold text-blue-600 text-lg">
-                                AirHealth Admin
-                            </Text>
-                        </View>
+                </TouchableOpacity>
 
-                        {/* Pinned Message */}
-                        <Text className="text-base text-gray-900 mb-2">
-                            {pinned.message || "No pinned message yet."}
-                        </Text>
-
-                        {/* Pinned Image (optional) */}
-                        {pinned.imageBase64 && (
-                            <Image
-                                source={{ uri: pinned.imageBase64 }}
-                                className="w-full h-40 rounded-lg bg-gray-200 mt-2"
-                                resizeMode="cover"
-                            />
-                        )}
-                    </View>
-                </>
-            ) : (
-                <>
-                    <View className="w-[80%] p-4 rounded-xl bg-gray-100 mb-6">
-                        <Text className="text-gray-600 italic text-center">
-                            Pinned report available.
+                {/* Modify - This should show the pinned report */}
+                {pinnedLoading ? (
+                    <View className="w-[80%] items-center justify-center py-6">
+                        <ActivityIndicator size="small" color="#666" />
+                        <Text className="text-gray-500 mt-2 text-sm">
+                            Loading pinned report...
                         </Text>
                     </View>
-                </>
-            )}
-
-            <View className="container w-[80%] border-b border-gray-400 mb-6"></View>
-
-            {/* Posts */}
-            {loading ? (
-                <ActivityIndicator size="large" color="#999" />
-            ) : posts.length === 0 ? (
-                <Text className="text-gray-400 text-base mt-10">
-                    No reports yet. Be the first to post!
-                </Text>
-            ) : (
-                posts.map((post) => (
-                    <View
-                        key={post.id}
-                        className="w-[80%] p-4 rounded-xl shadow-lg shadow-black/10 flex items-justify justify-start gap-3 flex-col bg-white mb-6"
-                    >
-                        {/* User Info */}
-                        <View className="w-full flex justify-start items-center flex-row">
-                            <View
-                                style={{
-                                    width: 40,
-                                    height: 40,
-                                    borderRadius: 20,
-                                    overflow: "hidden",
-                                    marginRight: 12,
-                                    backgroundColor: "#e0e0e0",
-                                    justifyContent: "center",
-                                    alignItems: "center",
-                                }}
-                            >
-                                {/* Placeholder profile circle */}
-                                <Text className="text-gray-600 font-bold">
-                                    {post.name
-                                        ? post.name.slice(0, 2).toUpperCase()
-                                        : "U"}
+                ) : pinned ? (
+                    <>
+                        <View className="w-[80%] p-4 rounded-xl shadow-lg shadow-black/10 bg-white mb-6 border border-blue-400">
+                            <View className="w-full items-center mb-2">
+                                <Text className="font-bold text-blue-600 text-lg">
+                                    AirHealth Admin
                                 </Text>
                             </View>
-                            <Text className="text-base text-black">
-                                {post.name || "Anonymous"}
+
+                            {/* Pinned Message */}
+                            <Text className="text-base text-gray-900 mb-2">
+                                {pinned.message || "No pinned message yet."}
+                            </Text>
+
+                            {/* Pinned Image (optional) */}
+                            {pinned.imageBase64 && (
+                                <TouchableOpacity
+                                    onPress={() =>
+                                        handleImagePress(pinned.imageBase64!)
+                                    }
+                                    activeOpacity={0.8}
+                                >
+                                    <Image
+                                        source={{ uri: pinned.imageBase64 }}
+                                        className="w-full h-40 rounded-lg bg-gray-200 mt-2"
+                                        resizeMode="cover"
+                                    />
+                                </TouchableOpacity>
+                            )}
+                        </View>
+                    </>
+                ) : (
+                    <>
+                        <View className="w-[80%] p-4 rounded-xl bg-gray-100 mb-6">
+                            <Text className="text-gray-600 italic text-center">
+                                Pinned report available.
                             </Text>
                         </View>
+                    </>
+                )}
 
-                        {/* Post Text */}
-                        <Text className="text-base text-black">
-                            {post.text}
-                        </Text>
+                <View className="container w-[80%] border-b border-gray-400 mb-6"></View>
 
-                        {/* Post Image (optional) */}
-                        {post.image && (
-                            <Image
-                                source={{ uri: post.image }}
-                                className="w-full h-40 rounded-lg bg-gray-200"
-                                resizeMode="cover"
-                            />
-                        )}
-                    </View>
-                ))
-            )}
-        </ScrollView>
+                {/* Posts */}
+                {loading ? (
+                    <ActivityIndicator size="large" color="#999" />
+                ) : posts.length === 0 ? (
+                    <Text className="text-gray-400 text-base mt-10">
+                        No reports yet. Be the first to post!
+                    </Text>
+                ) : (
+                    posts.map((post) => (
+                        <View
+                            key={post.id}
+                            className="w-[80%] p-4 rounded-xl shadow-lg shadow-black/10 flex items-justify justify-start gap-3 flex-col bg-white mb-6"
+                        >
+                            {/* User Info */}
+                            <View className="w-full flex justify-start items-center flex-row">
+                                <View
+                                    style={{
+                                        width: 40,
+                                        height: 40,
+                                        borderRadius: 20,
+                                        overflow: "hidden",
+                                        marginRight: 12,
+                                        backgroundColor: "#e0e0e0",
+                                        justifyContent: "center",
+                                        alignItems: "center",
+                                    }}
+                                >
+                                    {/* Placeholder profile circle */}
+                                    <Text className="text-gray-600 font-bold">
+                                        {post.name
+                                            ? post.name
+                                                  .slice(0, 2)
+                                                  .toUpperCase()
+                                            : "U"}
+                                    </Text>
+                                </View>
+                                <Text className="text-base text-black">
+                                    {post.name || "Anonymous"}
+                                </Text>
+                            </View>
+
+                            {/* Post Text */}
+                            <Text className="text-base text-black">
+                                {post.text}
+                            </Text>
+
+                            {/* Post Image (optional) */}
+                            {post.image && (
+                                <TouchableOpacity
+                                    onPress={() =>
+                                        handleImagePress(post.image!)
+                                    }
+                                    activeOpacity={0.8}
+                                >
+                                    <Image
+                                        source={{ uri: post.image }}
+                                        className="w-full h-40 rounded-lg bg-gray-200"
+                                        resizeMode="cover"
+                                    />
+                                </TouchableOpacity>
+                            )}
+                        </View>
+                    ))
+                )}
+            </ScrollView>
+            <ImageModal
+                visible={modalVisible}
+                imageUri={selectedImage}
+                onClose={closeModal}
+            />
+        </>
     );
 };
 
