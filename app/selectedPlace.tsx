@@ -7,11 +7,16 @@ import airQualityService, {
 } from "./components/airQualityService";
 import CircularProgress from "./components/circleProgress";
 import HealthRecommendationModal from "./components/healthRecommendationModal";
+import PollutantDetailModal from "./components/pollutantDetailModal";
+import { pollutantDetails } from "./components/pollutantDetails";
 import "./global.css";
 import Header from "./header";
 
 export default function SelectedPlace() {
     const [modalVisible, setModalVisible] = useState(false);
+    const [selectedPollutant, setSelectedPollutant] = useState<string | null>(
+        null
+    );
 
     // Read parameters passed to this screen
     const { lat, lng, location_name } = useLocalSearchParams<{
@@ -54,6 +59,16 @@ export default function SelectedPlace() {
             }
         })();
     }, [lat, lng]);
+
+    // Pollutant key mapping for detail modal
+    const pollutantKeyMap: Record<string, string> = {
+        "PM2.5": "pm25",
+        PM10: "pm10",
+        "O₃": "o3",
+        CO: "co",
+        "NO₂": "no2",
+        "SO₂": "so2",
+    };
 
     return (
         <ScrollView
@@ -123,6 +138,10 @@ export default function SelectedPlace() {
                         <TouchableOpacity
                             key={index}
                             className="w-[80%] bg-white rounded-[20px] mb-6 p-5"
+                            onPress={() => {
+                                const key = pollutantKeyMap[item.label];
+                                setSelectedPollutant(key); // Open modal with details
+                            }}
                             activeOpacity={0.9}
                             style={{
                                 shadowColor: "#000",
@@ -178,6 +197,16 @@ export default function SelectedPlace() {
             ) : (
                 <Text>Loading pollutants...</Text>
             )}
+
+            <PollutantDetailModal
+                visible={!!selectedPollutant}
+                onClose={() => setSelectedPollutant(null)}
+                pollutantInfo={
+                    selectedPollutant
+                        ? pollutantDetails[selectedPollutant]
+                        : undefined
+                }
+            />
         </ScrollView>
     );
 }
