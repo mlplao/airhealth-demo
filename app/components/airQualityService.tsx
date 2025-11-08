@@ -178,11 +178,17 @@ const airQualityService = {
         });
 
         const address = reverseGeocode[0];
+        let city = address?.city || address?.district || "Unknown";
+
+        // Check for "San Fernando City" and rename it
+        if (city === "San Fernando City") {
+            city = "City of San Fernando";
+        }
 
         return {
             latitude: location.coords.latitude,
             longitude: location.coords.longitude,
-            city: address?.city || address?.district || "Unknown",
+            city,
         };
     },
 
