@@ -116,11 +116,15 @@ function normalizedColorToHex(color: any): string {
 function simplifyStatus(category: string): string {
     if (!category) return "Unknown";
 
-    const lower = category.toLowerCase();
+    const lower = category.toLowerCase().trim();
 
     if (lower.includes("good") || lower.includes("excellent")) return "Good";
     if (lower.includes("moderate")) return "Moderate";
-    if (lower.includes("unhealthy for sensitive groups"))
+    if (lower.includes("low")) return "Low";
+    if (
+        lower.includes("unhealthy for sensitive") ||
+        lower.includes("sensitive groups")
+    )
         return "Unhealthy for Sensitive";
     if (lower.includes("unhealthy")) return "Unhealthy";
     if (lower.includes("very unhealthy")) return "Very Unhealthy";
@@ -238,7 +242,6 @@ const airQualityService = {
             const rawCategory = data?.indexes?.[0]?.category || "Unknown";
             const status = simplifyStatus(rawCategory);
             const colorData = index?.color || null; // get color data
-            console.log(index);
 
             // Calculate percentage using improved algorithm
             const percentage = getAirQualityPercentage(aqi, rawCategory);
@@ -338,6 +341,8 @@ const airQualityService = {
                 return "Air quality is excellent. Perfect for outdoor activities!";
             case "Moderate":
                 return "Air quality is acceptable for most people. Sensitive individuals should consider limiting outdoor activities.";
+            case "Low":
+                return "Air quality is slightly declining. Sensitive individuals may experience mild discomfort outdoors.";
             case "Unhealthy for Sensitive":
                 return "Sensitive groups should avoid outdoor activities. Others can enjoy outdoor activities with caution.";
             case "Unhealthy":

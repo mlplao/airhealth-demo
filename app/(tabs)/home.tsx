@@ -15,9 +15,7 @@ import airQualityService, {
 import "../global.css";
 import Header from "../header";
 // Vector Icons
-import { AntDesign } from "@expo/vector-icons";
 // Modals
-import HealthRecommendationModal from "../components/healthRecommendationModal";
 import PollutantDetailModal from "../components/pollutantDetailModal";
 import { pollutantDetails } from "../components/pollutantDetails";
 // Auth
@@ -33,9 +31,13 @@ export default function Index() {
     const { user } = useAuth();
     const paddingTop =
         Platform.OS === "ios" ? 44 : StatusBar.currentHeight || 0;
-    const [modalVisible, setModalVisible] = useState(false);
     const [selectedPollutant, setSelectedPollutant] = useState<string | null>(
         null
+    );
+
+    // Recommendation data message
+    const [recommendation, setRecommendation] = useState<string>(
+        "Fetching air quality details..."
     );
 
     // Health recommendation based on air quality status
@@ -54,10 +56,16 @@ export default function Index() {
         no2: { value: number; status: string };
         so2: { value: number; status: string };
     } | null>(null);
-    const recommendation = airQualityService.getHealthRecommendation(
-        airQuality?.status || "Unknown",
-        airQuality?.percentage || 0
-    );
+
+    useEffect(() => {
+        if (airQuality) {
+            const rec = airQualityService.getHealthRecommendation(
+                airQuality.status,
+                airQuality.percentage
+            );
+            setRecommendation(rec);
+        }
+    }, [airQuality]);
 
     const saveToFirestore = async (
         loc: LocationData,
@@ -159,21 +167,31 @@ export default function Index() {
                 {location ? location.city.toUpperCase() : "Loading location..."}
             </Text>
 
-            {/* Status */}
-            <TouchableOpacity
-                className="mb-8 flex flex-row items-center justify-between gap-4"
-                onPress={() => setModalVisible(true)}
+            {/* Air Recommendation */}
+            <View
+                className={`w-[80%] mb-8 items-center px-6 py-4 rounded-2xl bg-gray-50 shadow-sm border 
+    ${
+        airQuality?.status === "Good"
+            ? "border-green-400"
+            : airQuality?.status === "Moderate"
+              ? "border-yellow-400"
+              : airQuality?.status === "Low"
+                ? "border-amber-500"
+                : airQuality?.status === "Unhealthy for Sensitive"
+                  ? "border-orange-400"
+                  : airQuality?.status === "Unhealthy"
+                    ? "border-red-400"
+                    : airQuality?.status === "Very Unhealthy"
+                      ? "border-purple-400"
+                      : airQuality?.status === "Hazardous"
+                        ? "border-rose-500"
+                        : "border-gray-200"
+    }`}
             >
-                <Text className="font-bold text-2xl text-black">
-                    {airQuality?.status || "Unknown"}
+                <Text className="text-gray-700 text-center text-base leading-relaxed">
+                    {recommendation || "Fetching air quality details..."}
                 </Text>
-                <AntDesign name="question-circle" size={20} color="#000000ff" />
-            </TouchableOpacity>
-            <HealthRecommendationModal
-                visible={modalVisible}
-                onClose={() => setModalVisible(false)}
-                recommendation={recommendation}
-            />
+            </View>
 
             {/* Map Display */}
             <View className="w-[80%] mb-8 rounded-[12px] p-[2px]">
@@ -243,7 +261,6 @@ export default function Index() {
                             className="w-[80%] bg-white rounded-[20px] mb-6 p-5"
                             onPress={() => {
                                 const key = pollutantKeyMap[item.label];
-                                console.log("🧠 Selected pollutant key:", key);
                                 setSelectedPollutant(key);
                             }}
                             style={{
