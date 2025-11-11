@@ -22,6 +22,9 @@ import { db } from "../../firebaseconfig";
 import ImageModal from "../components/imageModal";
 import Header from "../header";
 
+// Bad words filter
+import { badWords } from "../components/badwords";
+
 interface ReportPost {
     id: string;
     uidPoster: string;
@@ -90,6 +93,20 @@ const Report = () => {
     const closeModal = () => {
         setModalVisible(false);
         setSelectedImage(null);
+    };
+
+    // Replace bad words with asterisks
+    const censorBadWords = (text: string): string => {
+        if (!text) return "";
+        const lower = text.toLowerCase();
+
+        let censoredText = text;
+        badWords.forEach((word) => {
+            const regex = new RegExp(`\\b${word}\\b`, "gi");
+            censoredText = censoredText.replace(regex, "*".repeat(word.length));
+        });
+
+        return censoredText;
     };
 
     return (
@@ -215,7 +232,7 @@ const Report = () => {
 
                             {/* Post Text */}
                             <Text className="text-base text-black">
-                                {post.text}
+                                {censorBadWords(post.text)}
                             </Text>
 
                             {/* Post Image (optional) */}
