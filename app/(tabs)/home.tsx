@@ -136,11 +136,6 @@ export default function Index() {
         >
             <Header />
 
-            {/* City */}
-            <Text className="text-4xl font-bold text-black shadow-lg shadow-black/15 mb-4">
-                {location ? location.city : "Loading location..."}
-            </Text>
-
             {/* AQI Circle */}
             <View
                 className="w-[80%] h-[200px] mb-4 items-center justify-center"
@@ -158,6 +153,11 @@ export default function Index() {
                     status={airQuality?.status}
                 />
             </View>
+
+            {/* City */}
+            <Text className="text-3xl font-bold text-black shadow-lg shadow-black/15 mb-4">
+                {location ? location.city.toUpperCase() : "Loading location..."}
+            </Text>
 
             {/* Status */}
             <TouchableOpacity
