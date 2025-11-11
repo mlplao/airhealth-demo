@@ -12,13 +12,11 @@ import {
 import airQualityService, {
     LocationData,
 } from "../components/airQualityService";
-import CircularProgress from "../components/circleProgress";
 import "../global.css";
 import Header from "../header";
 // Vector Icons
-import { AntDesign } from "@expo/vector-icons";
+import { Entypo } from "@expo/vector-icons";
 // Modals
-import HealthRecommendationModal from "../components/healthRecommendationModal";
 import PollutantDetailModal from "../components/pollutantDetailModal";
 import { pollutantDetails } from "../components/pollutantDetails";
 // Auth
@@ -27,16 +25,35 @@ import { useAuth } from "../context/authContext";
 import { doc, setDoc } from "firebase/firestore";
 import { db } from "../../firebaseconfig";
 // Notifications
+import CircularStatus from "../components/circleProgress";
 import { setupNotifications } from "../utils/notifications";
 
 export default function Index() {
     const { user } = useAuth();
     const paddingTop =
         Platform.OS === "ios" ? 44 : StatusBar.currentHeight || 0;
-    const [modalVisible, setModalVisible] = useState(false);
     const [selectedPollutant, setSelectedPollutant] = useState<string | null>(
         null
     );
+
+    // Recommendation data message
+    const [recommendation, setRecommendation] = useState<string>(
+        "Fetching air quality details..."
+    );
+
+    // Status order
+    const statusOrder = [
+        "Good",
+        "Moderate",
+        "Low",
+        "Unhealthy for Sensitive",
+        "Unhealthy",
+        "Very Unhealthy",
+        "Hazardous",
+    ];
+
+    // Toggle
+    const [showAllPollutants, setShowAllPollutants] = useState(false);
 
     // Health recommendation based on air quality status
     const [location, setLocation] = useState<LocationData | null>(null);
@@ -45,6 +62,7 @@ export default function Index() {
         status: string;
         color: string;
         aqi: number;
+        dominantPollutant: string;
     } | null>(null);
     const [pollutants, setPollutants] = useState<{
         pm25: { value: number; status: string };
@@ -54,10 +72,16 @@ export default function Index() {
         no2: { value: number; status: string };
         so2: { value: number; status: string };
     } | null>(null);
-    const recommendation = airQualityService.getHealthRecommendation(
-        airQuality?.status || "Unknown",
-        airQuality?.percentage || 0
-    );
+
+    useEffect(() => {
+        if (airQuality) {
+            const rec = airQualityService.getHealthRecommendation(
+                airQuality.status,
+                airQuality.percentage
+            );
+            setRecommendation(rec);
+        }
+    }, [airQuality]);
 
     const saveToFirestore = async (
         loc: LocationData,
@@ -136,11 +160,6 @@ export default function Index() {
         >
             <Header />
 
-            {/* City */}
-            <Text className="text-4xl font-bold text-black shadow-lg shadow-black/15 mb-4">
-                {location ? location.city : "Loading location..."}
-            </Text>
-
             {/* AQI Circle */}
             <View
                 className="w-[80%] h-[200px] mb-4 items-center justify-center"
@@ -152,29 +171,43 @@ export default function Index() {
                     elevation: 6,
                 }}
             >
-                <CircularProgress
-                    percentage={airQuality?.percentage || 0}
+                <CircularStatus
                     size={180}
-                    strokeWidth={10}
                     color={airQuality?.color}
+                    status={airQuality?.status}
                 />
             </View>
 
-            {/* Status */}
-            <TouchableOpacity
-                className="mb-8 flex flex-row items-center justify-between gap-4"
-                onPress={() => setModalVisible(true)}
+            {/* City */}
+            <Text className="text-3xl font-bold text-black shadow-lg shadow-black/15 mb-4">
+                {location ? location.city.toUpperCase() : "Loading location..."}
+            </Text>
+
+            {/* Air Recommendation */}
+            <View
+                className={`w-[80%] mb-8 items-center px-6 py-4 rounded-2xl bg-gray-50 shadow-sm border 
+    ${
+        airQuality?.status === "Good"
+            ? "border-green-400"
+            : airQuality?.status === "Moderate"
+              ? "border-yellow-400"
+              : airQuality?.status === "Low"
+                ? "border-amber-500"
+                : airQuality?.status === "Unhealthy for Sensitive"
+                  ? "border-orange-400"
+                  : airQuality?.status === "Unhealthy"
+                    ? "border-red-400"
+                    : airQuality?.status === "Very Unhealthy"
+                      ? "border-purple-400"
+                      : airQuality?.status === "Hazardous"
+                        ? "border-rose-500"
+                        : "border-gray-200"
+    }`}
             >
-                <Text className="font-bold text-2xl text-black">
-                    {airQuality?.status || "Unknown"}
+                <Text className="text-gray-700 text-center text-base leading-relaxed">
+                    {recommendation || "Fetching air quality details..."}
                 </Text>
-                <AntDesign name="question-circle" size={20} color="#000000ff" />
-            </TouchableOpacity>
-            <HealthRecommendationModal
-                visible={modalVisible}
-                onClose={() => setModalVisible(false)}
-                recommendation={recommendation}
-            />
+            </View>
 
             {/* Map Display */}
             <View className="w-[80%] mb-8 rounded-[12px] p-[2px]">
@@ -215,20 +248,8 @@ export default function Index() {
             </View>
 
             {/* Pollutants */}
-            {/* Pollutants */}
             {pollutants ? (
                 (() => {
-                    // Fix label → key mapping (handles subscripts & dots)
-                    const pollutantKeyMap: Record<string, string> = {
-                        "PM2.5": "pm25",
-                        PM10: "pm10",
-                        "O₃": "o3",
-                        CO: "co",
-                        "NO₂": "no2",
-                        "SO₂": "so2",
-                    };
-
-                    // List of pollutants to display — now using pollutants with { value, status }
                     const pollutantList = [
                         { label: "PM2.5", key: "pm25", data: pollutants.pm25 },
                         { label: "PM10", key: "pm10", data: pollutants.pm10 },
@@ -238,71 +259,133 @@ export default function Index() {
                         { label: "SO₂", key: "so2", data: pollutants.so2 },
                     ];
 
-                    return pollutantList.map((item, index) => (
-                        <TouchableOpacity
-                            key={index}
-                            className="w-[80%] bg-white rounded-[20px] mb-6 p-5"
-                            onPress={() => {
-                                const key = pollutantKeyMap[item.label];
-                                console.log("🧠 Selected pollutant key:", key);
-                                setSelectedPollutant(key);
-                            }}
-                            style={{
-                                shadowColor: "#000",
-                                shadowOffset: { width: 0, height: 0 },
-                                shadowOpacity: 0.15,
-                                shadowRadius: 6,
-                                elevation: 6,
-                            }}
-                        >
-                            {/* Top Row: Label (left) and Value (right) */}
-                            <View className="flex-row items-center justify-between">
-                                <Text className="font-bold text-lg text-gray-900">
-                                    {item.label}
-                                </Text>
-                                <View className="items-end">
-                                    <Text className="font-semibold text-lg text-gray-800">
-                                        {item.data?.value ?? 0} µg/m³
-                                    </Text>
-                                    <Text
-                                        className={`text-sm font-medium mt-1 ${
-                                            item.data?.status === "Good"
-                                                ? "text-green-600"
-                                                : item.data?.status?.includes(
-                                                        "Moderate"
-                                                    )
-                                                  ? "text-yellow-600"
-                                                  : item.data?.status?.includes(
-                                                          "Unhealthy for Sensitive"
-                                                      )
-                                                    ? "text-orange-600"
-                                                    : item.data?.status?.includes(
-                                                            "Unhealthy"
-                                                        )
-                                                      ? "text-red-600"
-                                                      : item.data?.status?.includes(
-                                                              "Very Unhealthy"
-                                                          )
-                                                        ? "text-purple-600"
+                    const pollutantFriendlyNames: Record<string, string> = {
+                        "PM2.5": "Tiny Particles",
+                        PM10: "Coarse Dust",
+                        "O₃": "Ozone",
+                        CO: "Carbon Monoxide",
+                        "NO₂": "Nitrogen Dioxide",
+                        "SO₂": "Sulfur Dioxide",
+                    };
+
+                    const statusOrder = [
+                        "Good",
+                        "Moderate",
+                        "Low",
+                        "Unhealthy for Sensitive",
+                        "Unhealthy",
+                        "Very Unhealthy",
+                        "Hazardous",
+                    ];
+
+                    const sortedPollutants = pollutantList.sort(
+                        (a, b) =>
+                            statusOrder.indexOf(b.data.status) -
+                            statusOrder.indexOf(a.data.status)
+                    );
+
+                    const visiblePollutants = showAllPollutants
+                        ? sortedPollutants
+                        : [sortedPollutants[0]]; // only worst one by default
+
+                    return (
+                        <>
+                            {visiblePollutants.map((item, index) => (
+                                <TouchableOpacity
+                                    key={index}
+                                    className="w-[80%] bg-white rounded-[20px] mb-6 p-5 shadow-sm"
+                                    onPress={() =>
+                                        setSelectedPollutant(item.key)
+                                    }
+                                >
+                                    <View className="flex-row items-center justify-between">
+                                        {/* Left Side — pollutant name */}
+                                        <View>
+                                            <Text className="font-bold text-lg text-gray-900">
+                                                {pollutantFriendlyNames[
+                                                    item.label
+                                                ] || item.label}
+                                            </Text>
+                                            <Text className="text-sm text-gray-500 mt-1">
+                                                {item.label}
+                                            </Text>
+                                        </View>
+
+                                        {/* Right Side — pollutant value and status */}
+                                        <View className="items-end">
+                                            <Text className="font-semibold text-lg text-gray-800">
+                                                {item.data?.value ?? 0} µg/m³
+                                            </Text>
+                                            <Text
+                                                className={`text-sm font-medium mt-1 ${
+                                                    item.data?.status === "Good"
+                                                        ? "text-green-600"
                                                         : item.data?.status?.includes(
-                                                                "Hazardous"
+                                                                "Moderate"
                                                             )
-                                                          ? "text-rose-700"
-                                                          : "text-gray-600"
-                                        }`}
-                                    >
-                                        {item.data?.status || "Unknown"}
-                                    </Text>
-                                </View>
-                            </View>
-                        </TouchableOpacity>
-                    ));
+                                                          ? "text-yellow-600"
+                                                          : item.data?.status?.includes(
+                                                                  "Low"
+                                                              )
+                                                            ? "text-amber-500"
+                                                            : item.data?.status?.includes(
+                                                                    "Unhealthy for Sensitive"
+                                                                )
+                                                              ? "text-orange-600"
+                                                              : item.data?.status?.includes(
+                                                                      "Unhealthy"
+                                                                  )
+                                                                ? "text-red-600"
+                                                                : item.data?.status?.includes(
+                                                                        "Very Unhealthy"
+                                                                    )
+                                                                  ? "text-purple-600"
+                                                                  : item.data?.status?.includes(
+                                                                          "Hazardous"
+                                                                      )
+                                                                    ? "text-rose-700"
+                                                                    : "text-gray-600"
+                                                }`}
+                                            >
+                                                {item.data?.status || "Unknown"}
+                                            </Text>
+                                        </View>
+                                    </View>
+                                </TouchableOpacity>
+                            ))}
+
+                            {/* Toggle Button */}
+                            <TouchableOpacity
+                                className="mb-8 flex-row items-center justify-center"
+                                onPress={() =>
+                                    setShowAllPollutants(!showAllPollutants)
+                                }
+                                activeOpacity={0.8}
+                            >
+                                <Text className="text-gray-600 font-semibold text-base">
+                                    {showAllPollutants
+                                        ? "SHOW LESS"
+                                        : "FULL BREAKDOWN"}
+                                </Text>
+                                <Entypo
+                                    name={
+                                        showAllPollutants
+                                            ? "chevron-small-up"
+                                            : "chevron-small-down"
+                                    }
+                                    size={22}
+                                    color="#4B5563" // gray-600 color
+                                    style={{ marginLeft: 4 }}
+                                />
+                            </TouchableOpacity>
+                        </>
+                    );
                 })()
             ) : (
                 <Text>Loading pollutants...</Text>
             )}
 
-            {/* 🧩 Pollutant Detail Modal */}
+            {/* Pollutant Detail Modal */}
             <PollutantDetailModal
                 visible={!!selectedPollutant}
                 onClose={() => setSelectedPollutant(null)}
