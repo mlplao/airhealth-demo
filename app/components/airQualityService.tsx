@@ -12,6 +12,7 @@ export interface AirQualityData {
     status: string;
     aqi: number; // Added AQI value for reference
     color: string; // Added color field (in hex format)
+    dominantPollutant: string;
 }
 
 export interface PollutantsData {
@@ -27,29 +28,30 @@ const GOOGLE_API_KEY = "AIzaSyCDnj-plCPLhZUgdc7VDGX-DITm2pZAYA8"; // <-- replace
 
 // For pollutants status computation
 function getPollutantStatus(code: string, value: number): string {
-    // Convert units to align with EPA standard scales
     switch (code) {
         case "o3":
-            // Convert ppb → ppm (from parts per billion to parts per billion)
-            value = value / 1000;
-            if (value <= 0.054) return "Good";
-            if (value <= 0.07) return "Moderate";
-            if (value <= 0.085) return "Unhealthy for Sensitive";
-            if (value <= 0.105) return "Unhealthy";
-            if (value <= 0.2) return "Very Unhealthy";
+            // O₃: EPA uses ppb, API returns ppb - Direct comparison
+            // EPA standards: 0-54 ppb (Good), 55-70 ppb (Moderate), etc.
+            if (value <= 54) return "Good";
+            if (value <= 70) return "Moderate";
+            if (value <= 85) return "Unhealthy for Sensitive";
+            if (value <= 105) return "Unhealthy";
+            if (value <= 200) return "Very Unhealthy";
             return "Hazardous";
 
         case "co":
-            // Convert ppb → ppm (from parts per billion to parts per billion)
-            value = value / 1000;
-            if (value <= 4.4) return "Good";
-            if (value <= 9.4) return "Moderate";
-            if (value <= 12.4) return "Unhealthy for Sensitive";
-            if (value <= 15.4) return "Unhealthy";
-            if (value <= 30.4) return "Very Unhealthy";
+            // CO: EPA uses ppm, API returns ppb - Convert ppb → ppm
+            // 1 ppm = 1000 ppb
+            const coPpm = value / 1000;
+            if (coPpm <= 4.4) return "Good";
+            if (coPpm <= 9.4) return "Moderate";
+            if (coPpm <= 12.4) return "Unhealthy for Sensitive";
+            if (coPpm <= 15.4) return "Unhealthy";
+            if (coPpm <= 30.4) return "Very Unhealthy";
             return "Hazardous";
 
         case "pm25":
+            // PM2.5: EPA uses µg/m³, API returns µg/m³ - Direct comparison
             if (value <= 12.0) return "Good";
             if (value <= 35.4) return "Moderate";
             if (value <= 55.4) return "Unhealthy for Sensitive";
@@ -58,6 +60,7 @@ function getPollutantStatus(code: string, value: number): string {
             return "Hazardous";
 
         case "pm10":
+            // PM10: EPA uses µg/m³, API returns µg/m³ - Direct comparison
             if (value <= 54) return "Good";
             if (value <= 154) return "Moderate";
             if (value <= 254) return "Unhealthy for Sensitive";
@@ -66,6 +69,7 @@ function getPollutantStatus(code: string, value: number): string {
             return "Hazardous";
 
         case "no2":
+            // NO₂: EPA uses ppb, API returns ppb - Direct comparison
             if (value <= 53) return "Good";
             if (value <= 100) return "Moderate";
             if (value <= 360) return "Unhealthy for Sensitive";
@@ -74,6 +78,7 @@ function getPollutantStatus(code: string, value: number): string {
             return "Hazardous";
 
         case "so2":
+            // SO₂: EPA uses ppb, API returns ppb - Direct comparison
             if (value <= 35) return "Good";
             if (value <= 75) return "Moderate";
             if (value <= 185) return "Unhealthy for Sensitive";
@@ -242,6 +247,7 @@ const airQualityService = {
             const rawCategory = data?.indexes?.[0]?.category || "Unknown";
             const status = simplifyStatus(rawCategory);
             const colorData = index?.color || null; // get color data
+            const dominantPollutant = data?.indexes?.[0]?.dominantPollutant;
 
             // Calculate percentage using improved algorithm
             const percentage = getAirQualityPercentage(aqi, rawCategory);
@@ -249,7 +255,7 @@ const airQualityService = {
             // convert to hex
             const color = normalizedColorToHex(colorData);
 
-            return { percentage, status, aqi, color };
+            return { percentage, status, aqi, color, dominantPollutant };
         } catch (error) {
             console.error("Error fetching air quality:", error);
             return {
@@ -257,6 +263,7 @@ const airQualityService = {
                 status: "Unavailable",
                 aqi: 0,
                 color: "#A9A9A9", // fallback gray
+                dominantPollutant: "Unavailable",
             };
         }
     },
