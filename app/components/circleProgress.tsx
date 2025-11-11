@@ -2,55 +2,44 @@ import React from "react";
 import { Text, View } from "react-native";
 import Svg, { Circle } from "react-native-svg";
 
-interface CircularProgressProps {
-    percentage?: number;
+interface CircularStatusProps {
     size?: number;
-    strokeWidth?: number;
-    color?: string; // <-- New color prop from API
+    color?: string; // AQI color
+    status?: string; // AQI status text
 }
 
-const CircularProgress = ({
-    percentage = 0,
-    size = 120,
-    strokeWidth = 16,
-    color = "#4CAF50", // Default green if no color provided
-}: CircularProgressProps) => {
-    const radius = (size - strokeWidth) / 2;
-    const circumference = 2 * Math.PI * radius;
-    const strokeDashoffset = circumference - (circumference * percentage) / 100;
+const CircularStatus = ({
+    size = 180,
+    color = "#4CAF50",
+    status = "Unknown",
+}: CircularStatusProps) => {
+    const radius = size / 2;
 
     return (
-        <View className="items-center justify-center">
+        <View
+            className="items-center justify-center"
+            style={{
+                width: size,
+                height: size,
+            }}
+        >
             <Svg width={size} height={size}>
-                {/* Background circle */}
-                <Circle
-                    stroke="#dadadaff"
-                    fill="none"
-                    cx={size / 2}
-                    cy={size / 2}
-                    r={radius}
-                    strokeWidth={strokeWidth}
-                />
-                {/* Progress circle */}
-                <Circle
-                    stroke={color}
-                    fill="none"
-                    cx={size / 2}
-                    cy={size / 2}
-                    r={radius}
-                    strokeWidth={strokeWidth}
-                    strokeDasharray={circumference}
-                    strokeDashoffset={strokeDashoffset}
-                    strokeLinecap="round"
-                    transform={`rotate(-90 ${size / 2} ${size / 2})`}
-                />
+                {/* Filled Circle */}
+                <Circle cx={radius} cy={radius} r={radius} fill={color} />
             </Svg>
 
-            <Text className="absolute text-xl font-bold text-gray-800">
-                {percentage}%
+            {/* Center Status Text */}
+            <Text
+                className="absolute font-bold text-black text-center"
+                style={{
+                    fontSize: 22,
+                    width: size * 0.9,
+                }}
+            >
+                {status}
             </Text>
         </View>
     );
 };
 
-export default CircularProgress;
+export default CircularStatus;

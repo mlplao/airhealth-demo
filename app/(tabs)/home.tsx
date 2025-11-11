@@ -12,7 +12,6 @@ import {
 import airQualityService, {
     LocationData,
 } from "../components/airQualityService";
-import CircularProgress from "../components/circleProgress";
 import "../global.css";
 import Header from "../header";
 // Vector Icons
@@ -27,6 +26,7 @@ import { useAuth } from "../context/authContext";
 import { doc, setDoc } from "firebase/firestore";
 import { db } from "../../firebaseconfig";
 // Notifications
+import CircularStatus from "../components/circleProgress";
 import { setupNotifications } from "../utils/notifications";
 
 export default function Index() {
@@ -152,11 +152,10 @@ export default function Index() {
                     elevation: 6,
                 }}
             >
-                <CircularProgress
-                    percentage={airQuality?.percentage || 0}
+                <CircularStatus
                     size={180}
-                    strokeWidth={10}
                     color={airQuality?.color}
+                    status={airQuality?.status}
                 />
             </View>
 

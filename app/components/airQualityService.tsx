@@ -87,13 +87,30 @@ function getPollutantStatus(code: string, value: number): string {
 }
 
 function normalizedColorToHex(color: any): string {
-    if (!color) return "#A9A9A9"; // default gray if missing
-    const toHex = (c: number) =>
-        Math.round(c * 255)
+    // Default gray if color is missing or invalid
+    if (
+        !color ||
+        typeof color !== "object" ||
+        (color.red == null && color.green == null && color.blue == null)
+    ) {
+        return "#A9A9A9";
+    }
+
+    // Helper: safely convert normalized color (0–1) to hex pair
+    const toHex = (c: number | undefined) => {
+        if (typeof c !== "number" || isNaN(c)) return "00"; // fallback to 0 if invalid
+        return Math.round(Math.min(1, Math.max(0, c)) * 255)
             .toString(16)
             .padStart(2, "0")
             .toUpperCase();
-    return `#${toHex(color.red)}${toHex(color.green)}${toHex(color.blue)}`;
+    };
+
+    // Provide fallback values for any missing channel
+    const r = toHex(color.red ?? 0);
+    const g = toHex(color.green ?? 0);
+    const b = toHex(color.blue ?? 0);
+
+    return `#${r}${g}${b}`;
 }
 
 function simplifyStatus(category: string): string {
@@ -221,6 +238,7 @@ const airQualityService = {
             const rawCategory = data?.indexes?.[0]?.category || "Unknown";
             const status = simplifyStatus(rawCategory);
             const colorData = index?.color || null; // get color data
+            console.log(index);
 
             // Calculate percentage using improved algorithm
             const percentage = getAirQualityPercentage(aqi, rawCategory);
