@@ -314,7 +314,7 @@ export default function Index() {
                                         {/* Right Side — pollutant value and status */}
                                         <View className="items-end">
                                             <Text className="font-semibold text-lg text-gray-800">
-                                                {item.data?.value ?? 0} µg/m³
+                                                {item.data?.value ?? 0}
                                             </Text>
                                             <Text
                                                 className={`text-sm font-medium mt-1 ${
