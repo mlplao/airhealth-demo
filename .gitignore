@@ -38,3 +38,5 @@ yarn-error.*
 
 app-example
 airhealth-backend/firebase-key.json
+android/
+ios/
