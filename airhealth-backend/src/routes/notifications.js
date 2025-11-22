@@ -1,6 +1,5 @@
 // routes/notifications.js
 import express from "express";
-import { collection, getDocs } from "firebase/firestore";
 import {
     broadcastNotifications,
     sendPushNotification,
@@ -30,11 +29,18 @@ router.post("/broadcast", async (req, res) => {
     }
 
     try {
-        const snapshot = await getDocs(collection(db, "users"));
-        const users = snapshot.docs.map((doc) => ({
-            userId: doc.id,
-            ...doc.data(),
-        }));
+        const snapshot = await db.collection("users").get();
+        const users = [];
+
+        snapshot.forEach((doc) => {
+            const data = doc.data();
+            users.push({
+                userId: doc.id,
+                expoPushToken: data.expoPushToken || null,
+                name: data.name || null,
+                email: data.email || null,
+            });
+        });
 
         const results = await broadcastNotifications(users, title, body);
 
