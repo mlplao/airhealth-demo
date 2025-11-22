@@ -38,6 +38,6 @@ yarn-error.*
 
 # Specific files
 app-example
-airhealth-backend/
+airhealth-backend
 android/
 ios/
