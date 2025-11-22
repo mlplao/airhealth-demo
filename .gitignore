@@ -36,6 +36,7 @@ yarn-error.*
 # typescript
 *.tsbuildinfo
 
+# Specific files
 app-example
 airhealth-backend/firebase-key.json
 android/
