@@ -278,15 +278,15 @@ export default function Index() {
                         "Hazardous",
                     ];
 
-                    const sortedPollutants = pollutantList.sort(
-                        (a, b) =>
-                            statusOrder.indexOf(b.data.status) -
-                            statusOrder.indexOf(a.data.status)
-                    );
+                    const sortedPollutants = pollutantList.sort((a, b) => {
+                        if (a.key === airQuality?.dominantPollutant) return -1;
+                        if (b.key === airQuality?.dominantPollutant) return 1;
+                        return 0;
+                    });
 
                     const visiblePollutants = showAllPollutants
                         ? sortedPollutants
-                        : [sortedPollutants[0]]; // only worst one by default
+                        : [sortedPollutants[0]];
 
                     return (
                         <>
