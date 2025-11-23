@@ -111,8 +111,6 @@ export default function Search() {
                 lng = place.lng;
             }
 
-            console.log("Selected Place:", { name, lat, lng });
-
             // Save to Firestore recentSearches array (limit to 5)
             if (user?.uid) {
                 const userRef = doc(db, "users", user.uid);
