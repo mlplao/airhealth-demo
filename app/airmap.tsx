@@ -10,7 +10,7 @@ import {
 } from "react-native";
 import MapView, { Marker, UrlTile } from "react-native-maps";
 
-const API_KEY = "AIzaSyCDnj-plCPLhZUgdc7VDGX-DITm2pZAYA8";
+const API_KEY = "AIzaSyB83MnrMzIyIh1k-jNRm0GEKalWAE3XbUI"; // lloyd's key
 
 const Airmap = () => {
     const [coords, setCoords] = useState<{

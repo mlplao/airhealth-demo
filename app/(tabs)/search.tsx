@@ -14,7 +14,7 @@ import {
 import { db } from "../../firebaseconfig";
 import { useAuth } from "../context/authContext";
 
-const GOOGLE_API_KEY = "AIzaSyCDnj-plCPLhZUgdc7VDGX-DITm2pZAYA8";
+const GOOGLE_API_KEY = "AIzaSyB83MnrMzIyIh1k-jNRm0GEKalWAE3XbUI"; // lloyd's key
 
 interface PlacePrediction {
     place_id: string;
