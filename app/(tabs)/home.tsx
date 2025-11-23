@@ -15,21 +15,26 @@ import airQualityService, {
 import "../global.css";
 import Header from "../header";
 // Vector Icons
-import { Entypo } from "@expo/vector-icons";
+import { Entypo, FontAwesome } from "@expo/vector-icons";
 // Modals
 import PollutantDetailModal from "../components/pollutantDetailModal";
 import { pollutantDetails } from "../components/pollutantDetails";
+import SickSurvey from "../components/sickSurvey";
 // Auth
 import { useAuth } from "../context/authContext";
 // Firestore
-import { doc, setDoc } from "firebase/firestore";
+import { doc, getDoc, setDoc } from "firebase/firestore";
 import { db } from "../../firebaseconfig";
 // Notifications
 import CircularStatus from "../components/circleProgress";
+import Stethos from "../components/stethos";
 import { setupNotifications } from "../utils/notifications";
 
 export default function Index() {
     const { user } = useAuth();
+    // User Data from Firestore Datbase
+    const [userData, setUserData] = useState<any>(user);
+
     const paddingTop =
         Platform.OS === "ios" ? 44 : StatusBar.currentHeight || 0;
     const [selectedPollutant, setSelectedPollutant] = useState<string | null>(
@@ -148,6 +153,43 @@ export default function Index() {
         })();
     }, []);
 
+    const [showSickSurvey, setShowSickSurvey] = useState(false);
+    useEffect(() => {
+        (async () => {
+            if (!user?.uid) return;
+
+            const ref = doc(db, "users", user.uid);
+            const snap = await getDoc(ref);
+
+            const existingSickness = snap.data()?.sickness;
+
+            if (!existingSickness) {
+                setShowSickSurvey(true);
+            }
+        })();
+        if (!user?.uid) return;
+
+        const fetchUserData = async () => {
+            try {
+                const ref = doc(db, "users", user.uid);
+                const snap = await getDoc(ref);
+
+                if (snap.exists()) {
+                    setUserData(snap.data());
+                } else {
+                    console.warn("User document does not exist.");
+                    setUserData(null);
+                }
+            } catch (error) {
+                console.error("Error fetching user data:", error);
+            }
+        };
+
+        fetchUserData();
+    }, [user]);
+
+    const [showStethosMessage, setShowStethosMessage] = useState(false);
+
     return (
         <ScrollView
             className="flex-1"
@@ -159,6 +201,28 @@ export default function Index() {
             showsVerticalScrollIndicator={false}
         >
             <Header />
+
+            {/* Stethoscope Button */}
+            {userData?.sickness !== "None" && (
+                <View className="w-[80%] justify-center items-end">
+                    <TouchableOpacity
+                        className="w-14 h-14 rounded-full bg-white shadow-md flex items-center justify-center active:opacity-80"
+                        onPress={() => setShowStethosMessage(true)}
+                        style={{
+                            shadowColor: "#000",
+                            shadowOpacity: 0.15,
+                            shadowRadius: 6,
+                            elevation: 6,
+                        }}
+                    >
+                        <FontAwesome
+                            name="stethoscope"
+                            size={26}
+                            color="#16a34a"
+                        />
+                    </TouchableOpacity>
+                </View>
+            )}
 
             {/* AQI Circle */}
             <View
@@ -393,6 +457,20 @@ export default function Index() {
                     selectedPollutant
                         ? pollutantDetails[selectedPollutant]
                         : undefined
+                }
+            />
+            <SickSurvey
+                visible={showSickSurvey}
+                onClose={() => setShowSickSurvey(false)}
+            />
+            <Stethos
+                visible={showStethosMessage}
+                onClose={() => setShowStethosMessage(false)}
+                sickness={userData?.sickness}
+                pollutant={airQuality?.dominantPollutant || "Unknown"}
+                status={
+                    pollutants?.[airQuality?.dominantPollutant]?.status ||
+                    "Unknown"
                 }
             />
         </ScrollView>
