@@ -24,7 +24,7 @@ export interface PollutantsData {
     so2: { value: number; status: string };
 }
 
-const GOOGLE_API_KEY = "AIzaSyCDnj-plCPLhZUgdc7VDGX-DITm2pZAYA8"; // <-- replace with your key
+const GOOGLE_API_KEY = "AIzaSyB83MnrMzIyIh1k-jNRm0GEKalWAE3XbUI"; // lloyds key
 
 // For pollutants status computation
 function getPollutantStatus(code: string, value: number): string {
