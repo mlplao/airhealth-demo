@@ -167,6 +167,7 @@ export default function Index() {
                 setShowSickSurvey(true);
             }
         })();
+        // Fetch user data
         if (!user?.uid) return;
 
         const fetchUserData = async () => {
