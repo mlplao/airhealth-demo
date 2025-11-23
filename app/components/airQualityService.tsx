@@ -248,6 +248,7 @@ const airQualityService = {
             const status = simplifyStatus(rawCategory);
             const colorData = index?.color || null; // get color data
             const dominantPollutant = data?.indexes?.[0]?.dominantPollutant;
+            console.log(dominantPollutant);
 
             // Calculate percentage using improved algorithm
             const percentage = getAirQualityPercentage(aqi, rawCategory);
