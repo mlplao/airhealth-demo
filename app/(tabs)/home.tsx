@@ -23,7 +23,7 @@ import SickSurvey from "../components/sickSurvey";
 // Auth
 import { useAuth } from "../context/authContext";
 // Firestore
-import { doc, getDoc, setDoc } from "firebase/firestore";
+import { doc, getDoc, onSnapshot, setDoc } from "firebase/firestore";
 import { db } from "../../firebaseconfig";
 // Notifications
 import CircularStatus from "../components/circleProgress";
@@ -170,23 +170,23 @@ export default function Index() {
         // Fetch user data
         if (!user?.uid) return;
 
-        const fetchUserData = async () => {
-            try {
-                const ref = doc(db, "users", user.uid);
-                const snap = await getDoc(ref);
+        const ref = doc(db, "users", user.uid);
 
-                if (snap.exists()) {
-                    setUserData(snap.data());
+        const unsubscribe = onSnapshot(ref, (snap) => {
+            if (snap.exists()) {
+                const data = snap.data();
+                setUserData(data);
+
+                // If sickness field is missing → show survey
+                if (!data.sickness) {
+                    setShowSickSurvey(true);
                 } else {
-                    console.warn("User document does not exist.");
-                    setUserData(null);
+                    setShowSickSurvey(false);
                 }
-            } catch (error) {
-                console.error("Error fetching user data:", error);
             }
-        };
+        });
 
-        fetchUserData();
+        return () => unsubscribe();
     }, [user]);
 
     const [showStethosMessage, setShowStethosMessage] = useState(false);
@@ -203,18 +203,11 @@ export default function Index() {
         >
             <Header />
 
-            {/* Stethoscope Button */}
-            {userData?.sickness !== "None" && (
+            {userData?.sickness && userData.sickness !== "None" && (
                 <View className="w-[80%] justify-center items-end">
                     <TouchableOpacity
                         className="w-14 h-14 rounded-full bg-white shadow-md flex items-center justify-center active:opacity-80"
                         onPress={() => setShowStethosMessage(true)}
-                        style={{
-                            shadowColor: "#000",
-                            shadowOpacity: 0.15,
-                            shadowRadius: 6,
-                            elevation: 6,
-                        }}
                     >
                         <FontAwesome
                             name="stethoscope"
