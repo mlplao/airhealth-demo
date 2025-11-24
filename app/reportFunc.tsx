@@ -26,23 +26,27 @@ export default function ReportFunc() {
     const [image, setImage] = useState<string | null>(null);
     const [loading, setLoading] = useState(false);
     const [userName, setUserName] = useState<string>("");
+    const [userData, setUserData] = useState<any>(null);
 
     useEffect(() => {
-        const fetchUserName = async () => {
-            if (user?.uid) {
-                try {
-                    const userDoc = await getDoc(doc(db, "users", user.uid));
-                    if (userDoc.exists()) {
-                        setUserName(userDoc.data().name || "Anonymous");
-                    }
-                } catch (error) {
-                    console.error("Error fetching user name:", error);
-                    setUserName("Anonymous");
+        const fetchUserData = async () => {
+            if (!user?.uid) return;
+
+            try {
+                const snap = await getDoc(doc(db, "users", user.uid));
+
+                if (snap.exists()) {
+                    setUserData(snap.data()); // full object (name, photo, etc.)
+                } else {
+                    setUserData({ name: "Anonymous", profilePhoto: null });
                 }
+            } catch (error) {
+                console.error("Error fetching user data:", error);
+                setUserData({ name: "Anonymous", profilePhoto: null });
             }
         };
 
-        fetchUserName();
+        fetchUserData();
     }, [user?.uid]);
 
     const pickImage = async () => {
@@ -81,11 +85,12 @@ export default function ReportFunc() {
         try {
             await addDoc(collection(db, "reports"), {
                 uidPoster: user.uid,
-                name: userName,
+                name: userData?.name,
+                photoImage: userData?.profilePhoto || null,
                 text: message.trim(),
                 image: image || null,
                 createdAt: serverTimestamp(),
-                likes: 0,
+                likes: [],
                 comments: [],
             });
 
