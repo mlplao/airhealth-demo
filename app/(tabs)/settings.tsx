@@ -1,4 +1,5 @@
 import { router } from "expo-router";
+import { getAuth, sendPasswordResetEmail } from "firebase/auth";
 import React from "react";
 import {
     Alert,
@@ -48,6 +49,50 @@ export default function Index() {
         }
     };
 
+    const handleChangePassword = () => {
+        Alert.alert(
+            "Reset Password",
+            "We will send a password reset link to your email. Do you want to continue?",
+            [
+                { text: "Cancel", style: "cancel" },
+                {
+                    text: "Send Email",
+                    style: "default",
+                    onPress: async () => {
+                        try {
+                            const auth = getAuth();
+                            const currentUser = auth.currentUser;
+
+                            if (!currentUser?.email) {
+                                Alert.alert(
+                                    "Error",
+                                    "No email found for this account."
+                                );
+                                return;
+                            }
+
+                            await sendPasswordResetEmail(
+                                auth,
+                                currentUser.email
+                            );
+
+                            Alert.alert(
+                                "Email Sent",
+                                "A password reset link has been sent to your email."
+                            );
+                        } catch (error: any) {
+                            console.log(error);
+                            Alert.alert(
+                                "Error",
+                                "Failed to send reset link. Please try again."
+                            );
+                        }
+                    },
+                },
+            ]
+        );
+    };
+
     return (
         <ScrollView
             className="flex-1"
@@ -63,15 +108,21 @@ export default function Index() {
 
             <View className="w-[80%] bg-gray-100 rounded-lg p-4 shadow mb-4">
                 <Text className="text-lg text-gray-800 mb-2">Account</Text>
-                <TouchableOpacity className="py-3 border-b border-gray-300">
+                <TouchableOpacity
+                    className="py-3 border-b border-gray-300"
+                    onPress={() => router.push("/editProfile")}
+                >
                     <Text className="text-base">Edit Profile</Text>
                 </TouchableOpacity>
-                <TouchableOpacity className="py-3">
+                <TouchableOpacity
+                    className="py-3"
+                    onPress={handleChangePassword}
+                >
                     <Text className="text-base">Change Password</Text>
                 </TouchableOpacity>
             </View>
 
-            <View className="w-[80%] bg-gray-100 rounded-lg p-4 shadow mb-4">
+            {/* <View className="w-[80%] bg-gray-100 rounded-lg p-4 shadow mb-4">
                 <Text className="text-lg text-gray-800 mb-2">Preferences</Text>
                 <TouchableOpacity className="py-3 border-b border-gray-300">
                     <Text className="text-base">Notifications</Text>
@@ -79,9 +130,9 @@ export default function Index() {
                 <TouchableOpacity className="py-3">
                     <Text className="text-base">Theme</Text>
                 </TouchableOpacity>
-            </View>
+            </View> */}
 
-            <View className="w-[80%] bg-gray-100 rounded-lg p-4 shadow mb-4">
+            {/* <View className="w-[80%] bg-gray-100 rounded-lg p-4 shadow mb-4">
                 <Text className="text-lg text-gray-800 mb-2">
                     Developer Tools
                 </Text>
@@ -93,7 +144,7 @@ export default function Index() {
                         Send Test Notification
                     </Text>
                 </TouchableOpacity>
-            </View>
+            </View> */}
 
             <View className="w-[80%] bg-gray-100 rounded-lg p-4 shadow">
                 <TouchableOpacity className="py-3" onPress={handleSignOut}>

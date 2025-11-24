@@ -52,6 +52,14 @@ export default function RootLayout() {
                         headerBackTitle: "Back",
                     }}
                 />
+                <Stack.Screen
+                    name="editProfile"
+                    options={{
+                        headerShown: true,
+                        title: "Edit Profile",
+                        headerBackTitle: "Back",
+                    }}
+                />
             </Stack>
         </AuthProvider>
     );
