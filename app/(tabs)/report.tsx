@@ -1,11 +1,14 @@
 import { router } from "expo-router";
 import {
+    arrayRemove,
+    arrayUnion,
     collection,
     doc,
     getDoc,
     onSnapshot,
     orderBy,
     query,
+    updateDoc,
 } from "firebase/firestore";
 import React, { useEffect, useState } from "react";
 import {
@@ -20,9 +23,11 @@ import {
 } from "react-native";
 import { db } from "../../firebaseconfig";
 import ImageModal from "../components/imageModal";
+import { useAuth } from "../context/authContext";
 import Header from "../header";
 
 // Bad words filter
+import { FontAwesome } from "@expo/vector-icons";
 import { badWords } from "../components/badwords";
 
 interface ReportPost {
@@ -32,6 +37,8 @@ interface ReportPost {
     image?: string | null;
     createdAt?: { seconds: number; nanoseconds: number };
     name?: string;
+    photoImage?: string | null;
+    likes?: string[];
 }
 
 interface PinnedReportData {
@@ -42,6 +49,7 @@ interface PinnedReportData {
 const Report = () => {
     const paddingTop =
         Platform.OS === "ios" ? 44 : StatusBar.currentHeight || 0;
+    const { user } = useAuth();
 
     const [posts, setPosts] = useState<ReportPost[]>([]);
     const [loading, setLoading] = useState(true);
@@ -107,6 +115,29 @@ const Report = () => {
         });
 
         return censoredText;
+    };
+
+    const toggleLike = async (postId: string, likes: string[] = []) => {
+        if (!user?.uid) return;
+
+        const postRef = doc(db, "reports", postId);
+        const userId = user.uid;
+
+        try {
+            if (likes.includes(userId)) {
+                // User already liked → remove like
+                await updateDoc(postRef, {
+                    likes: arrayRemove(userId),
+                });
+            } else {
+                // User hasn't liked → add like
+                await updateDoc(postRef, {
+                    likes: arrayUnion(userId),
+                });
+            }
+        } catch (err) {
+            console.log("Error updating like:", err);
+        }
     };
 
     return (
@@ -216,14 +247,20 @@ const Report = () => {
                                         alignItems: "center",
                                     }}
                                 >
-                                    {/* Placeholder profile circle */}
-                                    <Text className="text-gray-600 font-bold">
-                                        {post.name
-                                            ? post.name
-                                                  .slice(0, 2)
-                                                  .toUpperCase()
-                                            : "U"}
-                                    </Text>
+                                    {post.photoImage ? (
+                                        <Image
+                                            source={{ uri: post.photoImage }}
+                                            style={{ width: 40, height: 40 }}
+                                        />
+                                    ) : (
+                                        <Text className="text-gray-600 font-bold">
+                                            {post.name
+                                                ? post.name
+                                                      .slice(0, 2)
+                                                      .toUpperCase()
+                                                : "U"}
+                                        </Text>
+                                    )}
                                 </View>
                                 <Text className="text-base text-black">
                                     {post.name || "Anonymous"}
@@ -250,6 +287,34 @@ const Report = () => {
                                     />
                                 </TouchableOpacity>
                             )}
+                            <View className="w-full flex flex-row justify-end items-center gap-6 mt-2">
+                                <View className="flex flex-row justify-center items-center">
+                                    <TouchableOpacity
+                                        onPress={() =>
+                                            toggleLike(post.id, post.likes)
+                                        }
+                                        activeOpacity={0.7}
+                                    >
+                                        <FontAwesome
+                                            name={
+                                                post.likes?.includes(user?.uid)
+                                                    ? "heart"
+                                                    : "heart-o"
+                                            }
+                                            size={22}
+                                            color={
+                                                post.likes?.includes(user?.uid)
+                                                    ? "red"
+                                                    : "gray"
+                                            }
+                                        />
+                                    </TouchableOpacity>
+
+                                    <Text className="text-base color-gray-500 ml-2">
+                                        {post.likes?.length ?? 0}
+                                    </Text>
+                                </View>
+                            </View>
                         </View>
                     ))
                 )}
