@@ -18,12 +18,14 @@ const Airmap = () => {
         longitude: number;
     } | null>(null);
     const [heatmapVisible, setHeatmapVisible] = useState(true);
+    const [permissionDenied, setPermissionDenied] = useState(false);
 
     useEffect(() => {
         (async () => {
             let { status } = await Location.requestForegroundPermissionsAsync();
+
             if (status !== "granted") {
-                console.error("Location permission not granted");
+                setPermissionDenied(true);
                 return;
             }
 
@@ -34,6 +36,20 @@ const Airmap = () => {
             });
         })();
     }, []);
+
+    if (permissionDenied) {
+        return (
+            <View
+                style={{
+                    flex: 1,
+                    justifyContent: "center",
+                    alignItems: "center",
+                }}
+            >
+                <Text>Location permission is required to use the map.</Text>
+            </View>
+        );
+    }
 
     if (!coords) {
         return <ActivityIndicator size="large" color="blue" />;

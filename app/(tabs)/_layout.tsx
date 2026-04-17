@@ -4,7 +4,7 @@ import { Animated, Pressable, View } from "react-native";
 
 const CustomTabBar = (props: any) => {
     const animatedValues = React.useRef(
-        props.state.routes.map(() => new Animated.Value(0))
+        props.state.routes.map(() => new Animated.Value(0)),
     ).current;
 
     React.useEffect(() => {
@@ -94,7 +94,7 @@ const CustomTabBar = (props: any) => {
                                         fontWeight: isFocused
                                             ? "bold"
                                             : "normal",
-                                        fontSize: 12,
+                                        fontSize: 11,
                                         textAlign: "center",
                                     }}
                                 >

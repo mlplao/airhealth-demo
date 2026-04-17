@@ -34,6 +34,8 @@ export default function Index() {
     const { user } = useAuth();
     // User Data from Firestore Datbase
     const [userData, setUserData] = useState<any>(user);
+    const [error, setError] = useState<string | null>(null);
+    const [loading, setLoading] = useState(true);
 
     const paddingTop =
         Platform.OS === "ios" ? 44 : StatusBar.currentHeight || 0;
@@ -130,6 +132,8 @@ export default function Index() {
                 // const pushToken = await setupNotifications();
 
                 // Get location and air quality data
+                setLoading(true);
+
                 const loc = await airQualityService.getCurrentLocation();
                 setLocation(loc);
 
@@ -145,11 +149,16 @@ export default function Index() {
                 );
                 setPollutants(pol);
 
-                // Save everything to Firestore
-                // await saveToFirestore(loc, aqi.aqi, pushToken);
                 await saveToFirestore(loc, aqi.aqi);
-            } catch (error) {
-                console.error(error);
+            } catch (err: any) {
+                console.error(err);
+
+                // 👇 THIS is the key part
+                setError(
+                    "Failed to get location data. Please enable location.",
+                );
+            } finally {
+                setLoading(false);
             }
         })();
     }, []);
@@ -191,6 +200,28 @@ export default function Index() {
     }, [user]);
 
     const [showStethosMessage, setShowStethosMessage] = useState(false);
+
+    if (loading) {
+        return (
+            <View className="flex-1 justify-center items-center">
+                <Text>Loading data...</Text>
+            </View>
+        );
+    }
+
+    if (error) {
+        return (
+            <View className="flex-1 justify-center items-center px-6">
+                <Text className="text-lg font-semibold text-red-500 mb-3 text-center">
+                    Failed to get data
+                </Text>
+
+                <Text className="text-gray-600 text-center mb-6">
+                    Please enable location permission in your device settings.
+                </Text>
+            </View>
+        );
+    }
 
     return (
         <ScrollView
