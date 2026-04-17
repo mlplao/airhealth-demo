@@ -2,13 +2,13 @@ import { Redirect, Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import React from "react";
 import { AuthProvider, useAuth } from "./context/authContext";
-import { useNotifications } from "./utils/useNotifications";
+// import { useNotifications } from "./utils/useNotifications";
 
 function RootNavigator() {
     const { user } = useAuth();
 
     // Setup notifications globally
-    useNotifications();
+    // useNotifications();
 
     // Redirect depending on login status
     if (user === null) {

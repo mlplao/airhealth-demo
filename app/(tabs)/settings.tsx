@@ -14,7 +14,6 @@ import { useAuth } from "../context/authContext";
 import "../global.css";
 import Header from "../header";
 // Notifications
-import * as Notifications from "expo-notifications";
 
 export default function Index() {
     const { logout } = useAuth();
@@ -32,22 +31,22 @@ export default function Index() {
         }
     };
 
-    const sendTestNotification = async () => {
-        try {
-            await Notifications.scheduleNotificationAsync({
-                content: {
-                    title: "AirHealth",
-                    body: "Air quality has changed in your area! Tap to view details.",
-                    data: { screen: "home" },
-                },
-                trigger: null,
-            });
-            Alert.alert("Success", "Test notification sent!");
-        } catch (error) {
-            Alert.alert("Error", "Failed to send test notification");
-            console.error(error);
-        }
-    };
+    // const sendTestNotification = async () => {
+    //     try {
+    //         await Notifications.scheduleNotificationAsync({
+    //             content: {
+    //                 title: "AirHealth",
+    //                 body: "Air quality has changed in your area! Tap to view details.",
+    //                 data: { screen: "home" },
+    //             },
+    //             trigger: null,
+    //         });
+    //         Alert.alert("Success", "Test notification sent!");
+    //     } catch (error) {
+    //         Alert.alert("Error", "Failed to send test notification");
+    //         console.error(error);
+    //     }
+    // };
 
     const handleChangePassword = () => {
         Alert.alert(
@@ -66,30 +65,30 @@ export default function Index() {
                             if (!currentUser?.email) {
                                 Alert.alert(
                                     "Error",
-                                    "No email found for this account."
+                                    "No email found for this account.",
                                 );
                                 return;
                             }
 
                             await sendPasswordResetEmail(
                                 auth,
-                                currentUser.email
+                                currentUser.email,
                             );
 
                             Alert.alert(
                                 "Email Sent",
-                                "A password reset link has been sent to your email."
+                                "A password reset link has been sent to your email.",
                             );
                         } catch (error: any) {
                             console.log(error);
                             Alert.alert(
                                 "Error",
-                                "Failed to send reset link. Please try again."
+                                "Failed to send reset link. Please try again.",
                             );
                         }
                     },
                 },
-            ]
+            ],
         );
     };
 

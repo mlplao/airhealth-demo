@@ -28,7 +28,7 @@ import { db } from "../../firebaseconfig";
 // Notifications
 import CircularStatus from "../components/circleProgress";
 import Stethos from "../components/stethos";
-import { setupNotifications } from "../utils/notifications";
+// import { setupNotifications } from "../utils/notifications.tsrap";
 
 export default function Index() {
     const { user } = useAuth();
@@ -38,12 +38,12 @@ export default function Index() {
     const paddingTop =
         Platform.OS === "ios" ? 44 : StatusBar.currentHeight || 0;
     const [selectedPollutant, setSelectedPollutant] = useState<string | null>(
-        null
+        null,
     );
 
     // Recommendation data message
     const [recommendation, setRecommendation] = useState<string>(
-        "Fetching air quality details..."
+        "Fetching air quality details...",
     );
 
     // Status order
@@ -82,7 +82,7 @@ export default function Index() {
         if (airQuality) {
             const rec = airQualityService.getHealthRecommendation(
                 airQuality.status,
-                airQuality.percentage
+                airQuality.percentage,
             );
             setRecommendation(rec);
         }
@@ -91,7 +91,7 @@ export default function Index() {
     const saveToFirestore = async (
         loc: LocationData,
         aqi: number,
-        token: string | null
+        // token: string | null,
     ) => {
         if (!user?.uid) return;
 
@@ -104,9 +104,9 @@ export default function Index() {
                     currentLong: loc.longitude,
                     currentLat: loc.latitude,
                     currentAqi: aqi,
-                    expoPushToken: token,
+                    // expoPushToken: token,
                 },
-                { merge: true }
+                { merge: true },
             );
             console.log("Data saved to Firestore successfully");
         } catch (error) {
@@ -127,7 +127,7 @@ export default function Index() {
         (async () => {
             try {
                 // Setup notifications and get token
-                const pushToken = await setupNotifications();
+                // const pushToken = await setupNotifications();
 
                 // Get location and air quality data
                 const loc = await airQualityService.getCurrentLocation();
@@ -135,18 +135,19 @@ export default function Index() {
 
                 const aqi = await airQualityService.getAirQuality(
                     loc.latitude,
-                    loc.longitude
+                    loc.longitude,
                 );
                 setAirQuality(aqi);
 
                 const pol = await airQualityService.getPollutants(
                     loc.latitude,
-                    loc.longitude
+                    loc.longitude,
                 );
                 setPollutants(pol);
 
                 // Save everything to Firestore
-                await saveToFirestore(loc, aqi.aqi, pushToken);
+                // await saveToFirestore(loc, aqi.aqi, pushToken);
+                await saveToFirestore(loc, aqi.aqi);
             } catch (error) {
                 console.error(error);
             }
@@ -379,27 +380,27 @@ export default function Index() {
                                                     item.data?.status === "Good"
                                                         ? "text-green-600"
                                                         : item.data?.status?.includes(
-                                                                "Moderate"
+                                                                "Moderate",
                                                             )
                                                           ? "text-yellow-600"
                                                           : item.data?.status?.includes(
-                                                                  "Low"
+                                                                  "Low",
                                                               )
                                                             ? "text-amber-500"
                                                             : item.data?.status?.includes(
-                                                                    "Unhealthy for Sensitive"
+                                                                    "Unhealthy for Sensitive",
                                                                 )
                                                               ? "text-orange-600"
                                                               : item.data?.status?.includes(
-                                                                      "Unhealthy"
+                                                                      "Unhealthy",
                                                                   )
                                                                 ? "text-red-600"
                                                                 : item.data?.status?.includes(
-                                                                        "Very Unhealthy"
+                                                                        "Very Unhealthy",
                                                                     )
                                                                   ? "text-purple-600"
                                                                   : item.data?.status?.includes(
-                                                                          "Hazardous"
+                                                                          "Hazardous",
                                                                       )
                                                                     ? "text-rose-700"
                                                                     : "text-gray-600"
