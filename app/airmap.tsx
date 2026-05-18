@@ -19,6 +19,8 @@ const Airmap = () => {
     } | null>(null);
     const [heatmapVisible, setHeatmapVisible] = useState(true);
     const [permissionDenied, setPermissionDenied] = useState(false);
+    const [mapError, setMapError] = useState<string | null>(null);
+    const [heatmapError, setHeatmapError] = useState(false);
 
     useEffect(() => {
         (async () => {
@@ -55,6 +57,20 @@ const Airmap = () => {
         return <ActivityIndicator size="large" color="blue" />;
     }
 
+    if (mapError) {
+        return (
+            <View
+                style={{
+                    flex: 1,
+                    justifyContent: "center",
+                    alignItems: "center",
+                }}
+            >
+                <Text>Map failed to load: {mapError}</Text>
+            </View>
+        );
+    }
+
     return (
         <View style={{ flex: 1 }}>
             <MapView
@@ -65,6 +81,7 @@ const Airmap = () => {
                     latitudeDelta: 0.3,
                     longitudeDelta: 0.3,
                 }}
+                onError={(error) => setMapError(error.message)}
                 customMapStyle={[
                     {
                         elementType: "geometry",

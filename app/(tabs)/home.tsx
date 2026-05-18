@@ -12,7 +12,6 @@ import {
 import airQualityService, {
     LocationData,
 } from "../components/airQualityService";
-import "../global.css";
 import Header from "../header";
 // Vector Icons
 import { Entypo, FontAwesome } from "@expo/vector-icons";

@@ -2,6 +2,7 @@ import { Redirect, Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import React from "react";
 import { AuthProvider, useAuth } from "./context/authContext";
+import "./global.css";
 // import { useNotifications } from "./utils/useNotifications";
 
 function RootNavigator() {
