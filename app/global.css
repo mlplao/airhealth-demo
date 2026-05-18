@@ -2,15 +2,7 @@
 @tailwind components;
 @tailwind utilities;
 
-@font-face {
-    font-family: 'SF Pro Display';
-    src: url('../assets/fonts/SF-Pro-Display-Regular.otf') format('opentype'),
-         url('../assets/fonts/SF-Pro-Display.woff') format('woff'),
-         url('../assets/fonts/SF-Pro-Display.ttf') format('truetype');
-    font-weight: 100 900;
-    font-display: swap;
-}
-
+/* Remove custom font-face for now to avoid Android loading issues */
 html, body {
-    font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
 }
